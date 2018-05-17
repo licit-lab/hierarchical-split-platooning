@@ -1,6 +1,6 @@
 Symuvia/
 Tests/
-Network/
+Network/SymOut/
 Notebooks/.ipynb_checkpoints/
 
 *.DS_Store
