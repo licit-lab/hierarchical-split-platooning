@@ -10,6 +10,8 @@ Aurelien Duret, Meng Wang, Andres Ladino
 
 This repository contains source code used to generate the example in *"A hierarchical approach for splitting truck platoons near network discontinuities"* by [Aurelien Duret](https://www.researchgate.net/profile/Aurelien_Duret), [Meng Wang](http://mengwang.eu) and  [Andres Ladino](https://github.com/aladinoster). 
 
+![Basic usage](https://media.giphy.com/media/1wn4bvvcgkl4iFJ1Cl/giphy.gif) 
+
 ## Structure 
 
 - [Notebooks](notebooks): Contains the files to reproduce this results. 
