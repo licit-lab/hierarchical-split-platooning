@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ROOT_SYMUBRUIT xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="reseau.xsd" version="2.05">
     <SIMULATIONS>
-        <SIMULATION id="simID" pasdetemps="0.1" debut="07:00:00" fin="07:02:00" loipoursuite="exacte" comportementflux="iti" date="2018-04-27" titre="" proc_deceleration="false" seed="1">
+        <SIMULATION id="simID" pasdetemps="0.1" debut="07:00:00" fin="07:00:45" loipoursuite="exacte" comportementflux="iti" date="2018-04-27" titre="CAV-HDV-merging" proc_deceleration="false" seed="1">
             <RESTITUTION trace_route="false" trajectoires="true" debug="false" debug_matrice_OD="false" debug_SAS="false" csv="true"/>
         </SIMULATION>
     </SIMULATIONS>
@@ -14,7 +14,7 @@
                 <TRONCON id="Out_main"/>
             </TRONCONS>
             <TYPES_DE_VEHICULE>
-                <TYPE_DE_VEHICULE id="CAV" w="-6.25" kx="0.16" vx="25">
+                <TYPE_DE_VEHICULE id="CAV" w="-7.25" kx="0.16" vx="25">
                     <ACCELERATION_PLAGES>
                         <ACCELERATION_PLAGE ax="1.5" vit_sup="5.8"/>
                         <ACCELERATION_PLAGE ax="1" vit_sup="8"/>
@@ -53,9 +53,9 @@
                     <FLUX_GLOBAL>
                         <FLUX>
                             <DEMANDES>
-                                <DEMANDE niveau="0.1" duree="10"/>
+                                <DEMANDE niveau="0.1" duree="4"/>
                                 <DEMANDE niveau="0.4" duree="10"/>
-                                <DEMANDE niveau="0" duree="100"/>
+                                <DEMANDE niveau="0" duree="105"/>
                             </DEMANDES>
                             <REP_DESTINATIONS>
                                 <REP_DESTINATION>
@@ -80,10 +80,10 @@
     <RESEAUX>
         <RESEAU id="resID">
             <TRONCONS>
-                <TRONCON id="In_main" id_eltamont="Ext_In_main" id_eltaval="Spl_merge_area_start" extremite_amont="-800.000000 146.500000" extremite_aval="-0.196717 148.0" largeur_voie="3"/>
-                <TRONCON id="In_onramp" id_eltamont="Ext_In_onramp" id_eltaval="Spl_merge_area_start" extremite_amont="-600.000000 62.000000" extremite_aval="0.196717 145.0" largeur_voie="3"/>
+                <TRONCON id="In_main" id_eltamont="Ext_In_main" id_eltaval="Spl_merge_area_start" extremite_amont="-500.000000 146.500000" extremite_aval="-0.196717 148.0" largeur_voie="3"/>
+                <TRONCON id="In_onramp" id_eltamont="Ext_In_onramp" id_eltaval="Spl_merge_area_start" extremite_amont="-400.000000 62.000000" extremite_aval="0.196717 145.0" largeur_voie="3"/>
                 <TRONCON id="Merge_zone" id_eltamont="Spl_merge_area_start" id_eltaval="Spl_merge_area_end" extremite_amont="0.000000 146.500000" extremite_aval="100.000000 146.500000" nb_voie="2" largeur_voie="3" chgtvoie_dstfin="50" chgtvoie_dstfin_force="-1e+20" chgt_voie_droite="false"/>
-                <TRONCON id="Out_main" id_eltamont="Spl_merge_area_end" id_eltaval="Ext_Out_main" extremite_amont="100.000000 148" extremite_aval="199.606566 148" largeur_voie="3"/>
+                <TRONCON id="Out_main" id_eltamont="Spl_merge_area_end" id_eltaval="Ext_Out_main" extremite_amont="100.000000 148" extremite_aval="300.606566 148" largeur_voie="3"/>
             </TRONCONS>
             <CONNEXIONS>
                 <EXTREMITES>
