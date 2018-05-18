@@ -14,14 +14,14 @@
                 <TRONCON id="Out_main"/>
             </TRONCONS>
             <TYPES_DE_VEHICULE>
-                <TYPE_DE_VEHICULE id="VL" w="-5.8823" kx="0.17" vx="25">
+                <TYPE_DE_VEHICULE id="CAV" w="-6.25" kx="0.16" vx="25">
                     <ACCELERATION_PLAGES>
                         <ACCELERATION_PLAGE ax="1.5" vit_sup="5.8"/>
                         <ACCELERATION_PLAGE ax="1" vit_sup="8"/>
                         <ACCELERATION_PLAGE ax="0.5" vit_sup="infini"/>
                     </ACCELERATION_PLAGES>
                 </TYPE_DE_VEHICULE>
-                <TYPE_DE_VEHICULE id="VP" w="-4.9019" kx="0.17" vx="25">
+                <TYPE_DE_VEHICULE id="HDV" w="-3.5" kx="0.16" vx="25">
                     <ACCELERATION_PLAGES>
                         <ACCELERATION_PLAGE ax="1.5" vit_sup="5.8"/>
                         <ACCELERATION_PLAGE ax="1" vit_sup="8"/>
@@ -30,11 +30,12 @@
                 </TYPE_DE_VEHICULE>
             </TYPES_DE_VEHICULE>
             <EXTREMITES>
-                <EXTREMITE id="Ext_In_main" typeCreationVehicule="distributionExponentielle">
+                <EXTREMITE id="Ext_In_main" typeCreationVehicule="demande">
                     <FLUX_GLOBAL>
                         <FLUX>
                             <DEMANDES>
-                                <DEMANDE niveau="0.8" duree="1200"/>
+                                <DEMANDE niveau="0.8" duree="10"/>
+                                <DEMANDE niveau="0" duree="110"/>
                             </DEMANDES>
                             <REP_DESTINATIONS>
                                 <REP_DESTINATION>
@@ -43,7 +44,8 @@
                             </REP_DESTINATIONS>
                         </FLUX>
                         <REP_TYPEVEHICULES>
-                            <REP_TYPEVEHICULE coeffs="0.4 0.6" duree="600"/>
+                            <REP_TYPEVEHICULE coeffs="1 0" duree="10"/>
+                            <REP_TYPEVEHICULE coeffs="1 0" duree="110"/>
                         </REP_TYPEVEHICULES>
                     </FLUX_GLOBAL>
                 </EXTREMITE>
@@ -51,7 +53,9 @@
                     <FLUX_GLOBAL>
                         <FLUX>
                             <DEMANDES>
-                                <DEMANDE niveau="0.8" duree="1200"/>
+                                <DEMANDE niveau="0.1" duree="10"/>
+                                <DEMANDE niveau="0.4" duree="10"/>
+                                <DEMANDE niveau="0" duree="100"/>
                             </DEMANDES>
                             <REP_DESTINATIONS>
                                 <REP_DESTINATION>
@@ -59,6 +63,10 @@
                                 </REP_DESTINATION>
                             </REP_DESTINATIONS>
                         </FLUX>
+                        <REP_TYPEVEHICULES>
+                            <REP_TYPEVEHICULE coeffs="0 1" duree="10"/>
+                            <REP_TYPEVEHICULE coeffs="0 1" duree="110"/>
+                        </REP_TYPEVEHICULES>
                     </FLUX_GLOBAL>
                 </EXTREMITE>
                 <EXTREMITE id="Ext_Out_main"/>
