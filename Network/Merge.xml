@@ -34,8 +34,8 @@
                     <FLUX_GLOBAL>
                         <FLUX>
                             <DEMANDES>
-                                <DEMANDE niveau="0.8" duree="10"/>
-                                <DEMANDE niveau="0" duree="110"/>
+                                <DEMANDE niveau="0.8992248062015503" duree="10"/>
+                                <DEMANDE niveau="0" duree="100"/>
                             </DEMANDES>
                             <REP_DESTINATIONS>
                                 <REP_DESTINATION>
@@ -44,8 +44,8 @@
                             </REP_DESTINATIONS>
                         </FLUX>
                         <REP_TYPEVEHICULES>
-                            <REP_TYPEVEHICULE coeffs="1 0" duree="10"/>
-                            <REP_TYPEVEHICULE coeffs="1 0" duree="110"/>
+                            <REP_TYPEVEHICULE coeffs="1 0" duree="11"/>
+                            <REP_TYPEVEHICULE coeffs="1 0" duree="109"/>
                         </REP_TYPEVEHICULES>
                     </FLUX_GLOBAL>
                 </EXTREMITE>
@@ -54,7 +54,7 @@
                         <FLUX>
                             <DEMANDES>
                                 <DEMANDE niveau="0" duree="4"/>
-                                <DEMANDE niveau="0.4" duree="10"/>
+                                <DEMANDE niveau="0.4912280701754386" duree="10"/>
                                 <DEMANDE niveau="0" duree="105"/>
                             </DEMANDES>
                             <REP_DESTINATIONS>
