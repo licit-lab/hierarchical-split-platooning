@@ -7,6 +7,7 @@
 import sys 
 import os
 from ctypes import cdll, create_string_buffer, c_int, byref, c_double
+from xmltodict import parse
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 lib_path_name = ('..','SymuviaModPos','Contents','Frameworks','libSymuVia.dylib')
@@ -21,35 +22,74 @@ if symuvialib is None:
     
 print('\n Library loaded\n')
 
-# inputfile_path = '/Volumes/Data/Dropbox/Partage_Lafayette/resaux/'
-# inputfile_name = 'LafayetteVOpenSource.xml'
+file_path_name = ('..','Network','Merge.xml')
+file_name = os.path.join(dir_path,*file_path_name)
+print(file_name)
+m = symuvialib.SymLoadNetworkEx(file_name.encode('UTF8'))
+print(f'Network loaded {m}')
 
-# full_inputfile = inputfile_path+inputfile_name
-# print(full_inputfile)
+sFlow = create_string_buffer(10000)
+print(f'Value before {sFlow.value}')
+bEnd = c_int()
 
-# m = symuvialib.SymLoadNetworkEx(full_inputfile.encode('UTF8'))
-# print('\n Network loaded\n')
+# Run 5 steps 
 
-# sFlow = create_string_buffer(10000)
-# bEnd = c_int()
+time = range(5)
+for s in time:
+    
+    # For all vehicle connected if created:
+    # Drive vehicle 
+   # symuvialib.SymDriveVehiculeEx(Id,sTroncon, nVoie, dPos, bForce)
 
-# time = range(60)
-# for s in time:
-    
-#     # For all vehicle connected if created:
-#         # symuvialib.SymDriveVehiculeEx(Id,sTroncon, nVoie, dPos, bForce)
-    
-#     bResult = symuvialib.SymRunNextStepEx(sFlow, 1, byref(bEnd)) 
-#     print('Instant:',s+1)
-    
-#     stype = 'VL'
-#     sOrigin= 'E_Moliere_S'
-#     sDestination = 'S_Moliere_N'
-#     nVoie = c_int(1)
-#     dbTime = c_double(0.2)
-#     nIdVeh = symuvialib.SymCreateVehicleEx(stype,sOrigin.encode('UTF8'),sDestination.encode('UTF8'),nVoie,dbTime)
-#     print('Vehicle created', nIdVeh )
-    
+    bResult = symuvialib.SymRunNextStepEx(sFlow, 1, byref(bEnd)) 
+    dParsed = parse(sFlow.value.decode('UTF8'))
+    print('Instant:',s+1)
+
+
+    print(f'bResult: {bResult}')    
+    print(f'OutputNet: {sFlow.value}')        
+    ti = dParsed['INST']['@val']
+    print(ti, bResult)
+
+# Create vehicle at time step 0.5
+stype = 'CAV'
+sOrigin= 'Ext_In_main'
+sDestination = 'Ext_Out_main'
+nVoie = c_int(1)
+dbTime = c_double(0.05)
+nIdVeh = symuvialib.SymCreateVehicleEx(stype.encode('UTF8'), sOrigin.encode('UTF8'), sDestination.encode('UTF8'), nVoie, dbTime)
+print('Vehicle created', nIdVeh)
+
+# Run time step 
+
+bResult = symuvialib.SymRunNextStepEx(sFlow, 1, byref(bEnd)) 
+dParsed = parse(sFlow.value.decode('UTF8'))
+print(f'bResult: {bResult}')    
+print(f'OutputNet: {sFlow.value}')  
+ti = dParsed['INST']['@val']
+print(ti, bResult)   
+
+# Drive vehicle @ 0.5
+
+sTroncon = 'In_main'.encode('UTF8')
+nVoie = c_int(1)
+dPos = c_double(15.0)
+Id = c_int(nIdVeh)
+bForce = c_int(1)
+print(sTroncon,nVoie,dPos,Id, bForce)
+
+nres = symuvialib.SymDriveVehicleEx(Id, sTroncon, nVoie, dPos, bForce)
+
+
+bResult = symuvialib.SymRunNextStepEx(sFlow, 1, byref(bEnd)) 
+dParsed = parse(sFlow.value.decode('UTF8'))
+print(f'bResult: {bResult}')    
+print(f'OutputNet: {sFlow.value}')  
+ti = dParsed['INST']['@val']
+print(ti, bResult)   
+
+
+print('Drive ',nres )
 # dPos = 15
 # sLink = 'Rue_Moliere_SN_1'
 # nVoie = c_int(1)
