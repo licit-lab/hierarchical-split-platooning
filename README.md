@@ -22,6 +22,7 @@ This repository contains source code used to generate the example in *"A hierarc
 
 ## Launching simulations 
 
+Please find more details in this [Notebook](Output/00-Menu.ipynb)
 
 ### Locally 
 
