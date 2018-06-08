@@ -54,7 +54,7 @@
                         <FLUX>
                             <DEMANDES>
                                 <DEMANDE niveau="0" duree="4"/>
-                                <DEMANDE niveau="0.4912280701754386" duree="10"/>
+                                <DEMANDE niveau="0.25" duree="10"/>
                                 <DEMANDE niveau="0" duree="105"/>
                             </DEMANDES>
                             <REP_DESTINATIONS>
