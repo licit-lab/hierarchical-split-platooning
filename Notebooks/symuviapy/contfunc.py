@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+from symuviapy.symfunc import updatelist
+
 DT = 0.1 # Sample time 
 
 KC = 0.16 # CAV max density 
@@ -41,7 +43,7 @@ def initial_setup_mpc(results, h_ref):
     """ Initialize variables for controller
     """
     
-    TGref = format_reference(h_ref)  
+    TGref = h_ref #format_reference(h_ref)  
     h = TGref.shape[0] 
     
     n_CAV = len([ty[2] for ty in results if ty[2]=='CAV'])
@@ -121,7 +123,7 @@ def compute_control(results, h_ref, u_lead):
                     S[i+1] = S[i] + DT * DV[i]
                     V[i+1] = V[i]+ DT * u_s
         
-
+            print(V.shape,Tgref.shape)
             Sref = V * Tgref + 1/KC
             
             # Forward plots 
@@ -293,3 +295,198 @@ def format_open_loop(results):
         
     return lVehTrajOL,lVehUOL
 
+
+def find_projection(gi, VF, gm, W):
+    """ Find the projection of point gi at speed VF
+        over a point gm at speed -W
+    """
+    Xm, Tm = gm 
+    x, t = gi
+    M1 = np.array([[1,W],[1,-VF]])
+    b = np.array([Xm + W * Tm, x - VF * t])
+    pg = np.linalg.solve(M1,b)
+    return pg 
+
+def find_anticipation_time(veh, d_tau):
+    # Assuming eq.
+    T_x = veh['tau'] + d_tau
+    T_0 = veh['tau'] 
+
+    X_m = 0.0 # Fixed for this case
+
+    t_i = veh['ti']
+    x_i = veh['abs']        
+
+    T1 = t_i + (X_m-x_i) / VF
+
+    T2 = (VF + W) * (1 / VF - 1 / E) * (T_x - T_0)
+
+    T3 = E / 2 * (1 / U_MAX - 1 / U_MIN)
+
+    T4 = (VF + W) * (T_x - T_0) / E
+
+    T_a = T3 + T4 
+
+    T_y = T1 + T2 - T3
+
+    return T_a, T_y
+
+
+def solve_tactical_problem(lVehDataFormat):
+    """
+        Create a dictionary indicating the trigger time as a key     
+    """
+
+    SAFETY = 0 # Put on 0 for flow maximization
+    
+    # Find Xm, Tm
+    lArrivalTimes = [(-x['abs']/x['vit'],x['id'], 
+                      0.0, 
+                      float(x['ti'])-x['abs']/x['vit']) for x in lVehDataFormat]    
+    vehLeader = min(lArrivalTimes, key = lambda t: t[0])
+    gm =  (vehLeader[2],vehLeader[3])
+    
+    lProj = []
+    
+    for veh in lVehDataFormat:
+        gi = (veh['abs'],float(veh['ti']))
+        pg = find_projection(gi, veh['vit'], gm, W)
+        bBoundary= True if veh['id']==0 or veh['type']=='HDV' else False        
+        lProj.append((pg, 
+                      veh['id'], 
+                      bBoundary,
+                      dveh_twy[veh['type']], 
+                      dveh_dwy[veh['type']],
+                      veh['type'],
+                      veh['abs'],
+                      float(veh['ti']),
+                     ))
+    
+    keys = ('pg','id','bound','tau','d','type','abs','ti')
+    lProj = [dict(zip(keys, x)) for x in lProj]
+    
+    # Natural order 
+    lProjSort = sorted(lProj, key = lambda t: t['pg'][1])
+    
+    # Find only boundaries
+    lBound = [x for x in lProjSort if x['bound']]
+    
+    # CAV to allocate
+    lVehAlloc = [x for x in lProjSort if not x['bound']]
+    
+    
+    if len(lBound)> 1:
+        # Multiple boundaries 
+        
+        lBoundHead = lBound[0:-1]
+        lBoundTail = lBound[1:]
+        deltaT = [(x['pg'][1]-y['pg'][1]) for x,y in zip(lBoundTail,lBoundHead)]
+        
+        # Veh to allocate
+        lNumVehAlloc = []
+        for delta, lead in zip(deltaT,lBoundHead):
+            tau = lead['tau']        
+            nveh = max((delta-(tau+SAFETY*GHDV))//GCAV+1,0.0)
+            lNumVehAlloc.append(nveh)
+           
+        nVehLast = len(lVehAlloc)-sum(lNumVehAlloc)
+        lNumVehAlloc.append(nVehLast)
+                                 
+        
+    else: 
+        # Single Boundary         
+        lNumVehAlloc = [len(lVehAlloc)]
+        
+    
+    # Find order such that matches allocation    
+    newProjSort = []
+    veh2Alloc = iter(lVehAlloc)
+    addVeh = 0
+
+    for veh, number in zip(lBound,lNumVehAlloc):
+        cap = number
+
+        # Computation equilibria (Boundary)
+        pg_eq = veh['pg']
+        d_tau = pg_eq[1] - veh['pg'][1]
+        arr_t = find_projection(pg_eq, VF , gm, 0)[1]        
+        t_ant, t_yld = find_anticipation_time(veh, d_tau)
+
+        # Updates for follower
+        shift_x = veh['d']
+        shift_t = veh['tau']
+        
+        
+        # Storage 
+        updt_dict = {'pg_eq':pg_eq, 
+                     'd_tau':d_tau, 
+                     'arr_t':arr_t,
+                     'tau_f':veh['tau']+d_tau, 
+                     't_ant':t_ant, 
+                     't_yld':t_yld,
+                    }
+        veh = updatelist(veh,[updt_dict])    
+        newProjSort.append(veh)
+        addVeh += 1
+
+        while cap>0:
+            cav = next(veh2Alloc)
+
+            pg_ref = veh['pg'] if cap == number else newProjSort[addVeh-1]['pg_eq']  
+
+            # Computation new equilibria                
+            pg_eq = np.array([pg_ref[0] - shift_x, pg_ref[1] + shift_t])
+            d_tau = pg_eq[1] - cav['pg'][1]
+            arr_t = find_projection(pg_eq, VF , gm, 0)[1]
+            t_ant, t_yld = find_anticipation_time(cav, d_tau)
+
+            # Updates for follower
+            shift_x = veh['d']
+            shift_t = veh['tau']  
+
+            # Storage
+            updt_dict = {'pg_eq':pg_eq, 
+                         'd_tau':d_tau, 
+                         'arr_t':arr_t,
+                         'tau_f':veh['tau']+d_tau, 
+                         't_ant':t_ant, 
+                         't_yld':t_yld,
+                        }
+            cav = updatelist(cav,[updt_dict])                             
+            newProjSort.append(cav)
+            addVeh += 1
+            cap = cap - 1   
+    
+    # Create event dictionary 
+    
+    d_ev = {np.round(x['t_yld'],1): (x['id'], 
+                                     x['tau'],  
+                                     x['tau_f'], 
+                                     x['t_ant']) for x in lProj if x['type']=='CAV'}
+    
+    return d_ev 
+
+
+def headway_reference(gap_events):
+    """ Determine the time signal for the reference 
+        of the controller. 
+    """
+    
+    ti = np.arange(800)*DT
+    hr = []
+    
+    h_df = []
+    
+    for k, v in gap_events.items(): 
+        ref = v[1] + (v[2]-v[1]) / (1 + np.exp(-8*(ti-k)/(v[3])))
+        hr.append((ref,v[0])) 
+        df = pd.DataFrame(ti, columns = ['ti'])
+        df['id'] = v[0]
+        df['tau'] = ref 
+        h_df.append(df)
+    
+    refDf = pd.concat(h_df)
+    
+    refDf = pd.pivot_table(refDf, index='ti', columns='id')['tau']    
+    
+    return refDf

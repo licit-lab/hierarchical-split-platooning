@@ -17,6 +17,7 @@ dveh_dwy = {'CAV': 1/KC, 'HDV': 1/KH}
 U_MAX = 1.5 # Max. Acceleration
 U_MIN = -1.5 # Min. AccelerationDT = 0.1 # Sample time 
 
+from collections import Counter
 
 # Identify Leader 
 def queueveh(dLeader, veh):
@@ -132,3 +133,20 @@ def typedict(veh_dict):
         'vit': float(veh_dict['@vit']),
        }
     return data 
+
+
+def check_veh_creation(lVehDataFormat, nVehInitial):
+    """
+        Check that all initial conditions for the problem
+    """
+    
+    try: 
+        VehRoad = Counter([x['tron'] for x in lVehDataFormat])
+    except TypeError:
+        VehRoad = {lVehDataFormat['tron']:0}
+    
+    for key,val in VehRoad.items():
+        if val<nVehInitial[key]:
+            return False 
+    return True
+    
