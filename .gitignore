@@ -4,5 +4,7 @@ SymuviaModPos/
 Output/
 Network/SymOut/
 Notebooks/.ipynb_checkpoints/
-Notebooks/__pycache__
+Notebooks/__pycache__/
+Notebooks/symuviapy/__pycache__/
+Notebooks/symuviapy/.ipynb_checkpoints/
 *.DS_Store
