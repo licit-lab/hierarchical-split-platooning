@@ -81,10 +81,10 @@
     <RESEAUX>
         <RESEAU id="resID">
             <TRONCONS>
-                <TRONCON id="In_main" id_eltamont="Ext_In_main" id_eltaval="Spl_merge_area_start" extremite_amont="-1000.000000 146.500000" extremite_aval="-0.196717 148.0" largeur_voie="3"/>
-                <TRONCON id="In_onramp" id_eltamont="Ext_In_onramp" id_eltaval="Spl_merge_area_start" extremite_amont="-900.000000 62.000000" extremite_aval="0.196717 145.0" largeur_voie="3"/>
+                <TRONCON id="In_main" id_eltamont="Ext_In_main" id_eltaval="Spl_merge_area_start" extremite_amont="-1000.000000 146.500000" extremite_aval="0.00000 148.0" largeur_voie="3"/>
+                <TRONCON id="In_onramp" id_eltamont="Ext_In_onramp" id_eltaval="Spl_merge_area_start" extremite_amont="-900.000000 62.000000" extremite_aval="0.00000 145.0" largeur_voie="3"/>
                 <TRONCON id="Merge_zone" id_eltamont="Spl_merge_area_start" id_eltaval="Spl_merge_area_end" extremite_amont="0.000000 146.500000" extremite_aval="100.000000 146.500000" nb_voie="2" largeur_voie="3" chgtvoie_dstfin="50" chgtvoie_dstfin_force="-1e+20" chgt_voie_droite="false"/>
-                <TRONCON id="Out_main" id_eltamont="Spl_merge_area_end" id_eltaval="Ext_Out_main" extremite_amont="100.000000 148" extremite_aval="500.606566 148" largeur_voie="3"/>
+                <TRONCON id="Out_main" id_eltamont="Spl_merge_area_end" id_eltaval="Ext_Out_main" extremite_amont="100.000000 148" extremite_aval="1500.606566 148" largeur_voie="3"/>
             </TRONCONS>
             <CONNEXIONS>
                 <EXTREMITES>
