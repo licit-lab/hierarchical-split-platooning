@@ -6,7 +6,7 @@
         </SIMULATION>
     </SIMULATIONS>
     <TRAFICS>
-        <TRAFIC id="trafID" accbornee="true" coeffrelax="2.80" chgtvoie_ghost="false">
+        <TRAFIC id="trafID" accbornee="true" coeffrelax="4.0" chgtvoie_ghost="false">
             <TRONCONS>
                 <TRONCON id="In_main"/>
                 <TRONCON id="In_onramp"/>
