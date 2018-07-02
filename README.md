@@ -1,6 +1,6 @@
 **| [Overview](#overview) | [Structure](#structure) | [Launching simulations](#launching-simulations) | [External tools](#external-tools) | [License](#license) | [Contact](#contact) |**
 
-# ISTTT2019
+# Bi-level control strategy for platoons
 
 **A hierarchical approach for splitting truck platoons near network discontinuities**
 
@@ -29,7 +29,7 @@ Please find more details in this [Notebook](Output/00-Menu.ipynb)
 Locally you are able to reproduce this result and visualize the with case under *control* and the *uncontrolled* situation
 
 ```
-git clone https://github.com/research-licit/ISTTT2019.git
+https://github.com/research-licit/Hierarchical-Platooning.git
 ```
 
 ## External tools
@@ -39,8 +39,8 @@ git clone https://github.com/research-licit/ISTTT2019.git
 
 ## License
 
-These notebooks are licensed under [MIT License]()
+These notebooks are licensed under [MIT License](https://github.com/research-licit/Hierarchical-Platooning/blob/master/LICENSE)
 
 ## Contact 
 
-If you run into problems or bugs, please let us know by [creating an issue](https://github.com/research-licit/ISTTT2019/issues/new) an issue in this repository.
+If you run into problems or bugs, please let us know by [creating an issue](https://github.com/research-licit/Hierarchical-Platooning/issues/new) an issue in this repository.
