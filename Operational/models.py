@@ -23,9 +23,10 @@ class Vehicle:
                  veh_id: int = 0):
         self.__class__.n_veh += 1
         self.veh_id = veh_id
+        self.a_x_veh = np.array([0])
+        self.a_v_veh = np.array([0])
+        self.a_dv_vh = np.array([0])
         self.a_s_hwy = np.array([0])
-        self.a_v_veh = 0
-        self.a_dv_vh = 0
         self.veh_par = veh_par
 
 

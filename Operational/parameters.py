@@ -10,6 +10,8 @@
     Free flow speed:    u_ffs
     Critical density:   k_crt
     Maximum density:    k_max
+    Space displ:        x_dsp
+    Time displacement:  t_dsp
 
     Vehicle length:     l_veh
 
@@ -31,16 +33,21 @@
 from collections import namedtuple
 import typing
 
+
 # Default set of parameters
-CPCTY = 2400 / 3600.0
+CPCTY = 0.8
 U_FFS = 25
 
 # Vehicles
-L_CAV = 18
-X_GAP_CAV = 5
+L_CAV = 4.5
+X_GAP_CAV = 1.75
 
-L_HDV = 18
-X_GAP_HDV = 10
+L_HDV = 4.5
+X_GAP_HDV = 3.5
+
+K_X_CAV = 1 / (L_CAV + X_GAP_CAV)
+
+W_CGT_CAV = CPCTY / (K_X_CAV - CPCTY/U_FFS)
 
 # Simulation
 T_STP = 0.1
@@ -54,7 +61,7 @@ C3 = 0.5
 U_MAX = 1.5  # Max. Acceleration
 U_MIN = -1.5  # Min. Acceleration
 
-# Minimum Par
+# Minimum Required Parameters
 Par = namedtuple("Parameter", ["l_veh", "x_gap", "cpcty"])
 Sim = namedtuple("Simulation", ["t_stp", "t_hor", "t_sim"])
 
@@ -69,16 +76,19 @@ class VehParameter:
     Vehicle Parameters
     """
 
-    def __init__(self, cpcty: float = CPCTY,
+    def __init__(self,
                  u_ffs: float = U_FFS,
                  l_veh: float = L_CAV,
-                 x_gap: float = X_GAP_CAV):
+                 x_gap: float = X_GAP_CAV,
+                 **kwargs):
 
-        self.cpcty = cpcty
+        self.cpcty = None
         self.w_cgt = None
         self.u_ffs = u_ffs
         self.k_crt = None
         self.k_max = None
+        self.x_dsp = None
+        self.t_dsp = None
 
         self.l_veh = l_veh
         self.x_gap = x_gap
@@ -87,24 +97,67 @@ class VehParameter:
         self.t_hwy = None
 
         self.v_drp = None
-        self.fill_parameter()
+        self.fill_parameter(**kwargs)
 
     def __str__(self):
-        return (f"{self.__class__.__name__}(cpcty = {self.cpcty}, w_cgt= {self.w_cgt}, u_ffs= {self.u_ffs}, k_crt= {self.k_crt}, k_max= {self.k_max},  l_veh= {self.l_veh}, x_gap= {self.x_gap}, t_gap= {self.t_gap}, x_hwy= {self.x_hwy}, t_hwy= {self.t_hwy},  v_drp= {self.v_drp}"
+        return ("""{name}(\n cpcty= {cpcty},\n w_cgt= {w_cgt},\n u_ffs= {u_ffs},\n k_crt= {k_crt},\n k_max= {k_max},\n x_dsp= {x_dsp},\n t_dsp= {t_dsp},\n l_veh= {l_veh},\n x_gap= {x_gap},\n t_gap= {t_gap},\n x_hwy= {x_hwy},\n t_hwy= {t_hwy},\n v_drp= {v_drp},\n)""".format(name=self.__class__.__name__, **self.__dict__)
                 )
 
     def __repr__(self):
-        return (f"{self.__class__.__name__}(cpcty = {self.cpcty}, w_cgt= {self.w_cgt}, u_ffs= {self.u_ffs}, k_crt= {self.k_crt}, k_max= {self.k_max},  l_veh= {self.l_veh}, x_gap= {self.x_gap}, t_gap= {self.t_gap}, x_hwy= {self.x_hwy}, t_hwy= {self.t_hwy},  v_drp= {self.v_drp}"
+        return ("""{name} \n cpcty= {cpcty},\n w_cgt= {w_cgt},\n u_ffs= {u_ffs},\n k_crt= {k_crt},\n k_max= {k_max},\n x_dsp= {x_dsp},\n t_dsp= {t_dsp},\n l_veh= {l_veh},\n x_gap= {x_gap},\n t_gap= {t_gap},\n x_hwy= {x_hwy},\n t_hwy= {t_hwy},\n v_drp= {v_drp},\n)""".format(name=self.__class__.__name__, **self.__dict__)
                 )
 
-    def fill_parameter(self):
+    def fill_parameter(self, **kwargs):
         """
         Compute missing parameters
         """
-        self.x_hwy = self.l_veh + self.x_gap
-        self.k_max = 1 / self.x_hwy
-        self.k_crt = self.cpcty / self.u_ffs
-        self.w_cgt = self.cpcty / (self.k_max - self.k_crt)
+
+        self.x_dsp = self.find_x_dsp()
+        self.k_max = self.find_k_max()
+
+        self.cpcty = kwargs.get("cpcty", None)
+        if not self.cpcty:
+            print(
+                f"""Missing Parameters: \n C = {self.cpcty}\n No value for capacity provided \n Using congestion speed wave """
+            )
+            self.w_cgt = kwargs.get("w_cgt", None)
+            print(f" w = {self.w_cgt}")
+
+            self.cpcty = self.find_cpcty()
+
+            self.k_crt = self.find_k_crt()
+        else:
+            self.k_crt = self.find_k_crt()
+            self.w_cgt = self.find_w_cgt()
+
+        self.t_dsp = self.find_t_dsp()
+
+    def find_w_cgt(self):
+        return self.cpcty / (self.k_max - self.k_crt)
+
+    def find_k_crt(self):
+        return self.cpcty / self.u_ffs
+
+    def find_k_max(self):
+        return 1 / self.x_dsp
+
+    def find_cpcty(self):
+        try:
+            cpcty = self.w_cgt * self.u_ffs / \
+                (self.w_cgt + self.u_ffs) * self.k_max
+        except TypeError:
+            print(
+                f""" \n No value for wave congestion provided\n Using default value w: {W_CGT_CAV}""")
+            self.w_cgt = W_CGT_CAV
+            cpcty = self.w_cgt * self.u_ffs / \
+                (self.w_cgt + self.u_ffs) * self.k_max
+        return cpcty
+
+    def find_t_dsp(self):
+        return 1 / (self.k_max * self.w_cgt)
+
+    def find_x_dsp(self):
+        return self.l_veh + self.x_gap
 
 
 class SimParameter:

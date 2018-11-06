@@ -16,11 +16,12 @@ if __name__ == "__main__":
     N_VEH = 8
 
     # Parameters
-    CPCTY = 2400/3600
+    CPCTY = 0.8
     U_FFS = 25.0
-    L_VEH = 18.0
-    X_GAP = 55.80357142857143 - L_VEH
-    veh_par = VehParameter(CPCTY, U_FFS, L_VEH, X_GAP)
+    L_VEH = 4.5
+    X_GAP = 1.75
+
+    veh_par = VehParameter(U_FFS, L_VEH, X_GAP, cpcty=CPCTY)
     print(veh_par)
 
     l_veh_id = range(N_VEH)
