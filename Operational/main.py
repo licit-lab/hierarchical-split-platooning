@@ -18,6 +18,8 @@ if __name__ == "__main__":
     # Parameters
     CPCTY = 0.8
     U_FFS = 25.0
+
+    # Fixed for a K_MAX = 0.16
     L_VEH = 4.5
     X_GAP = 1.75
 
