@@ -6,20 +6,20 @@
     
     In order to use: python platoon-closed.py 
     
-    Check output files in: ../output/
+    Check output files in: ../Output/
 """
-
+import os
 import numpy as np
 
 # Platoon length
-N = 4
+N = 6
 
 # Truck parameters
 L_AVG = 18
-G = 9.81
+G = 0
 MU = 0.02
 M = 44000
-RHO = 1.2
+RHO = 0
 A = 10
 CD = 0.7
 
@@ -358,7 +358,7 @@ def closed_loop(dEvent):
     mS0 = np.ones(N) * (S_D + L_AVG)
     mV0 = np.ones(N) * V_P
     mDV0 = np.zeros(N)
-    mX0 = np.array([i * (S_D + L_AVG) for i in reversed(range(4))])
+    mX0 = np.array([i * (S_D + L_AVG) for i in reversed(range(N))])
 
     mS, mV, mDV = set_initial_condition(mS0, mV0, mDV0)
     mX = np.empty_like(mS)
@@ -424,7 +424,7 @@ if __name__ == "__main__":
 
     print(f'Simulating the following situations: {mEvents}')
 
-    dirname = '../output/'
+    dirname = '/Users/ladino/Documents/03-Code/02-Python/ISTTT2019/Output/'
 
     for event in mEvents:
 

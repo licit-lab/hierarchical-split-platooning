@@ -24,6 +24,15 @@ class ParameterTest(unittest.TestCase):
             Check empty constructor
         """
         veh_par = VehParameter()
+
+        self.assertEqual(veh_par.cpcty * veh_par.t_dsp,
+                         veh_par.u_ffs / (veh_par.w_cgt + veh_par.u_ffs))
+
+    def test_constructor_symuvia(self):
+        """
+            Check construction from k_x, w, u, l_veh
+        """
+        veh_par = VehParameter.VehParameterSym()
         print(veh_par)
         self.assertEqual(veh_par.cpcty * veh_par.t_dsp,
                          veh_par.u_ffs / (veh_par.w_cgt + veh_par.u_ffs))

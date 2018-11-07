@@ -1,12 +1,11 @@
 """
     Main Simulation.
 """
-
-from parameters import VehParameter
 from models import Vehicle, NetworkVeh
+from parameters import VehParameter
 
 
-def CreateVeh(n_veh: int):
+def CreateManager(n_veh: int):
     return n_veh
 
 
