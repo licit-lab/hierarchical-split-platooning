@@ -15,6 +15,16 @@ X_0 = np.zeros([0])
 # Dynamics defaut
 
 
+def third_order(a_s_hwy, a_v_veh, a_e_veh,):
+    """
+        Updates according to 3rd order dynamics
+    """
+    au_s_hwy = a_s_hwy + T * a_e_veh
+    au_v_veh = a_v_veh + T * a_a_veh
+    au_e_veh = a_e_veh + T * a_
+    au_a_veh = (1-T/tau) * a_a_veh + T/tau * a_u_veh
+
+
 class Vehicle:
     """
         Single vehicle container 
@@ -54,7 +64,9 @@ class NetworkVeh:
                               m_v_veh0: np.ndarray = X_0,
                               m_dv_vh0: np.ndarray = X_0
                               ):
-        """ Setup initial conditions of experiment"""
+        """ 
+            Setup initial conditions of experiment
+        """
         self.m_s_hwy = np.zeros()
         self.m_v_veh = np.zeros()
         self.m_dv_vh = np.zeros()
