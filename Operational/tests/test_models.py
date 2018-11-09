@@ -2,9 +2,8 @@
     Unit test for Models
 """
 
-from Operational.models import Vehicle, VehNetwork
-from Operational.parameters import VehParameter
-
+from Operational.hrctrl.models import Vehicle
+from Operational.hrctrl.params import VehParameter
 import unittest
 
 

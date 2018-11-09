@@ -1,8 +1,8 @@
 """
     Main Simulation.
 """
-from models import Vehicle, VehNetwork
-from parameters import VehParameter
+from Operational.models import Vehicle
+from Operational.parameters import VehParameter
 
 
 def CreateManager(n_veh: int):

@@ -8,7 +8,7 @@
 import numpy as np
 from numpy import ndarray
 
-from parameters import VehParameter, SimParameter
+from .params import VehParameter, SimParameter
 
 from typing import NewType, List, Callable, Union, Optional
 

@@ -1,0 +1,4 @@
+
+"""
+Tests hierarchical control
+"""
