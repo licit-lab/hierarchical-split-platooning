@@ -8,21 +8,55 @@
 import numpy as np
 from typing import List
 
-from parameters import VehParameter
+from parameters import VehParameter, SimParameter
 
 X_0 = np.zeros([0])
 
 # Dynamics defaut
 
 
-def third_order(a_s_hwy, a_v_veh, a_e_veh,):
+def third_order(veh_cst, veh_nif, veh_ctr,
+                veh_par, sim_par):
     """
         Updates according to 3rd order dynamics
+
+        veh_cst: Current vehicle state (s,v,e,a)
+        veh_nif: Neighbor vehicle information (u)
+        veh_ctr: Vehicle control input (u)
+        veh_par: Vehicle parameters
+        sim_par: Simulation parameters 
     """
-    au_s_hwy = a_s_hwy + T * a_e_veh
-    au_v_veh = a_v_veh + T * a_a_veh
-    au_e_veh = a_e_veh + T * a_
-    au_a_veh = (1-T/tau) * a_a_veh + T/tau * a_u_veh
+    a_s_hwy, a_v_veh, a_e_veh, a_a_veh = veh_cst
+    a_a_lead = veh_nif[0]
+    a_u_veh = veh_ctr[0]
+    t_stp = sim_par.t_stp
+    acc_lag = veh_par.acc_lag
+    au_s_hwy = a_s_hwy + t_stp * a_e_veh
+    au_v_veh = a_v_veh + t_stp * a_a_veh
+    au_e_veh = a_e_veh + t_stp * (a_a_lead-a_a_veh)
+    au_a_veh = (1-t_stp/acc_lag) * a_a_veh + t_stp/acc_lag * a_u_veh
+    return (au_s_hwy, au_v_veh, au_e_veh, au_a_veh)
+
+
+def second_order(veh_cst, veh_nif, veh_ctr,
+                 veh_par, sim_par):
+    """
+    Updates according to 2nd order dynamics
+
+    veh_cst: Current vehicle state (s,v,e)
+    veh_nif: Neighbor vehicle information (u)
+    veh_ctr: Vehicle control input (u)
+    veh_par: Vehicle parameters
+    sim_par: Simulation parameters 
+"""
+    a_s_hwy, a_v_veh, a_e_veh = veh_cst
+    a_u_lead = veh_nif[0]
+    a_u_veh = veh_ctr[0]
+    t_stp = sim_par.t_stp
+    au_s_hwy = a_s_hwy + t_stp * a_e_veh
+    au_v_veh = a_v_veh + t_stp * a_u_veh
+    au_e_veh = a_u_lead - au_v_veh
+    return (au_s_hwy, au_v_veh, au_e_veh)
 
 
 class Vehicle:
@@ -32,11 +66,12 @@ class Vehicle:
     n_veh = 0
 
     def __init__(self, veh_par: VehParameter,
-                 veh_id: int = 0):
+                 veh_id: int = 0,
+                 veh_dyn=second_order):
         self.__class__.n_veh += 1
         self.veh_id = veh_id
-        self.state = np.array([])
-        self.dynamic = 0
+        self.veh_cst = np.array([])
+        self.veh_dyn = veh_dyn
 
     # def update_veh_state(self):
     #     """

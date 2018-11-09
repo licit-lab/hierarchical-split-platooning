@@ -14,7 +14,7 @@ x_gap = 5
 u_ffs = 20
 
 
-class ParameterTest(unittest.TestCase):
+class TestParameter(unittest.TestCase):
     """
         Test for consistency of Traffic parameters
     """
