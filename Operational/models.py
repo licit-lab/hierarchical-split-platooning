@@ -73,17 +73,17 @@ class Vehicle:
         self.veh_cst = np.array([])
         self.veh_dyn = veh_dyn
 
-    # def update_veh_state(self):
-    #     """
-    #         Updates a v
-    #     """
-    #     pass
+    def update_veh_state(self):
+        """
+            Updates a v
+        """
+        pass
 
-    # def update_dynamics(self):
-    #     """"
-    #         Update vehicle dynamics
-    #     """"
-    #     pass
+    def update_dynamics(self):
+        """"
+            Update vehicle dynamics
+        """"
+        pass
 
 
 class NetworkVeh:
