@@ -57,9 +57,9 @@ T_HOR = 5
 T_SIM = 60
 
 # ControlParameter
-C1 = 0.1
-C2 = 1
-C3 = 0.5
+C_NB1 = 0.1
+C_NB2 = 1
+C_NB3 = 0.5
 U_MAX = 1.5  # Max. Acceleration
 U_MIN = -1.5  # Min. Acceleration
 
@@ -225,9 +225,9 @@ class CtrParameter:
 
     """
 
-    def __init__(self, c_nb1: float = C1,
-                 c_nb2: float = C2,
-                 c_nb3: float = C3,
+    def __init__(self, c_nb1: float = C_NB1,
+                 c_nb2: float = C_NB2,
+                 c_nb3: float = C_NB3,
                  u_min: float = U_MIN,
                  u_max: float = U_MAX):
         self.c_nb1 = c_nb1
