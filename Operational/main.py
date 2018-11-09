@@ -22,9 +22,20 @@ if __name__ == "__main__":
     L_VEH = 4.5
     X_GAP = 1.75
 
+    # Create vehicle parameters
     veh_par = VehParameter(U_FFS, L_VEH, X_GAP, cpcty=CPCTY)
     print(veh_par)
 
+    # Create network of vehicles
     l_veh_id = range(N_VEH)
-
     l_veh = [Vehicle(veh_par, veh_id) for veh_id in l_veh_id]
+
+    # Create Flow Manager (Vehicle Creation)
+
+    # Create controller
+
+    # Register controller in the network
+
+    # Create Simulation Controller
+
+    # Initiate simulation

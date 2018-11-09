@@ -30,15 +30,16 @@
     Max control:        u_max
     Min control:        u_min
 """
-from collections import namedtuple
+from typing import List, NamedTuple, Callable, Optional, Union
 import typing
 
+# -------------------- DEFAULT VALUES --------------------
 
 # Default set of parameters
 CPCTY = 0.8
-U_FFS = 25
+U_FFS = 25.0
 
-# Vehicles
+# VehicleParameter
 T_A = 0.01
 L_CAV = 4.5
 X_GAP_CAV = 1.75
@@ -50,26 +51,20 @@ K_X_CAV = 1 / (L_CAV + X_GAP_CAV)
 
 W_CGT_CAV = CPCTY / (K_X_CAV - CPCTY/U_FFS)
 
-# Simulation
+# SimulationParameter
 T_STP = 0.1
 T_HOR = 5
 T_SIM = 60
 
-# Control
+# ControlParameter
 C1 = 0.1
 C2 = 1
 C3 = 0.5
 U_MAX = 1.5  # Max. Acceleration
 U_MIN = -1.5  # Min. Acceleration
 
-# Minimum Required Parameters
-Par = namedtuple("Parameter", ["l_veh", "x_gap", "cpcty"])
-Sim = namedtuple("Simulation", ["t_stp", "t_hor", "t_sim"])
 
-CAV_Par = Par(L_CAV, X_GAP_CAV, CPCTY)
-HDV_Par = Par(L_CAV, X_GAP_CAV, CPCTY)
-
-Sim_Par = Sim(T_STP, T_HOR, T_SIM)
+# --------------------
 
 
 class VehParameter:
