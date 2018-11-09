@@ -37,6 +37,7 @@ def third_order(veh_cst: ndarray, veh_nif: ndarray, veh_ctr: ndarray,
     veh_ctr: Vehicle control input (u)
     veh_par: Vehicle parameters
     sim_par: Simulation parameters
+
     """
     a_s_hwy, a_v_veh, a_e_veh, a_a_veh = veh_cst
     a_a_lead = veh_nif[0]
@@ -60,6 +61,7 @@ def second_order(veh_cst: ndarray, veh_nif: ndarray, veh_ctr: ndarray,
     veh_ctr: Vehicle control input (u)
     veh_par: Vehicle parameters
     sim_par: Simulation parameters
+
     """
     a_s_hwy, a_v_veh, a_e_veh = veh_cst
     a_u_lead = veh_nif[0]
@@ -80,9 +82,10 @@ class VehDynamic:
     This object was created as a wrapper for the function 
     dynamic. It can complete missing parameters and provide
     an standard way to define 
+
     """
 
-    def __init__(self, veh_dyn: vdyn = second_order)->None:
+    def __init__(self, veh_dyn: vdyn = second_order):
         self.veh_dyn = veh_dyn
 
 # -------------------- VEHICLE CLASSES --------------------
