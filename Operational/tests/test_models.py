@@ -10,7 +10,7 @@ import unittest
 class TestModel(unittest.TestCase):
 
     def test_constructor(self):
-        veh_par = VehParameter()
+        # veh_par = VehParameter()
         veh_1 = Vehicle()
         self.assertTrue(isinstance(veh_1, Vehicle))
         self.assertEqual(veh_1.n_veh, 1)
