@@ -2,8 +2,8 @@
     Unit test for Models
 """
 
-from models import Vehicle, VehNetwork
-from parameters import VehParameter
+from Operational.models import Vehicle, VehNetwork
+from Operational.parameters import VehParameter
 
 import unittest
 

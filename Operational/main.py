@@ -1,7 +1,7 @@
 """
     Main Simulation.
 """
-from models import Vehicle, NetworkVeh
+from models import Vehicle, VehNetwork
 from parameters import VehParameter
 
 
