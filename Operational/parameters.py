@@ -33,7 +33,7 @@
 from typing import List, NamedTuple, Callable, Optional, Union
 import typing
 
-# -------------------- DEFAULT VALUES --------------------
+# -------------------- DEFAULT VALUES -----------------------------------------
 
 # Default set of parameters
 CPCTY = 0.8
@@ -69,7 +69,24 @@ U_MIN = -1.5  # Min. Acceleration
 
 class VehParameter:
     """
-    Vehicle Parameters
+    Vehicle Parameter:
+
+    VehParameter(u_ffs = float, l_veh = float, x_gap = float)
+
+    Stored parameters:
+
+    cpcty : Capacity               
+    u_ffs : Free flow speed        
+    w_cgt : Congestion wave        
+    k_crt : Critical density       
+    k_max : Maximum density        
+    x_dsp : Space displacement     
+    t_dsp : Time displacement          
+
+    Use this alternative constructor too:  
+
+    VehParameterSym(u_ffs =float, k_x = float, w_cgt = float, l_veh = float)
+
     """
 
     def __init__(self, u_ffs: float = U_FFS, l_veh: float = L_CAV,
@@ -165,6 +182,15 @@ class VehParameter:
 class SimParameter:
     """
     Simulation Parameters
+
+    SimParameter(t_stp = float, t_hor = float, t_sim = float)
+
+    Stored Parameters: 
+
+    t_stp : Time step:          
+    t_hor : Time horizon:       
+    s_hor : Sample horizon:      
+
     """
 
     def __init__(self, t_stp: float = T_STP, t_hor: float = T_HOR,
@@ -186,6 +212,17 @@ class SimParameter:
 class CtrParameter:
     """
     Control Parameters
+
+    CtrParameter(c_nb1= float, c_nb2= float, c_nb3= float, 
+                 u_min= float, u_max=float)
+
+    Stored Parameters
+    c_nb1 : Control weight space     
+    c_nb2 : Control weight epsilon   
+    c_nb3 : Control weight control   
+    u_max : Max control
+    u_min : Min control
+
     """
 
     def __init__(self, c_nb1: float = C1,

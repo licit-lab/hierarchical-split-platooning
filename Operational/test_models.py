@@ -2,7 +2,7 @@
     Unit test for Models
 """
 
-from models import Vehicle, NetworkVeh
+from models import Vehicle, VehNetwork
 from parameters import VehParameter
 
 import unittest
