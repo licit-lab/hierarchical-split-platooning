@@ -1,8 +1,8 @@
 """
     Main Simulation.
 """
-from Operational.models import Vehicle
-from Operational.parameters import VehParameter
+from hrctrl.models import Vehicle
+from hrctrl.params import VehParameter
 
 
 def CreateManager(n_veh: int):
@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     # Create network of vehicles
     l_veh_id = range(N_VEH)
-    l_veh = [Vehicle(veh_par, veh_id) for veh_id in l_veh_id]
+    l_veh = [Vehicle() for veh_id in l_veh_id]
 
     # Create Flow Manager (Vehicle Creation)
 
