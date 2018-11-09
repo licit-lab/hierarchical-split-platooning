@@ -56,7 +56,6 @@ def second_order(veh_cst, veh_nif, veh_ctr,
     au_s_hwy = a_s_hwy + t_stp * a_e_veh
     au_v_veh = a_v_veh + t_stp * a_u_veh
     au_e_veh = a_u_lead - au_v_veh
-
     return (au_s_hwy, au_v_veh, au_e_veh)
 
 
