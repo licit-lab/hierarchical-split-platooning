@@ -11,6 +11,7 @@ from numpy import ndarray
 from .params import VehParameter, SimParameter
 
 from typing import NewType, List, Callable, Union, Optional
+from functools import wraps
 
 # -------------------- TYPING --------------------
 
@@ -27,7 +28,28 @@ X_0 = np.zeros([0])
 # -------------------- VEHICLE DYNAMICS --------------------
 
 
-def third_order(veh_cst: ndarray, veh_nif: ndarray, veh_ctr: ndarray,
+class VehDynamic:
+    """
+    Vehicle dynamics
+
+    function_dynamic
+
+    This object was created as a wrapper for the function 
+    dynamic. It can complete missing parameters and provide
+    an standard way to define 
+
+    """
+    @wraps(vdyn)
+    def __init__(self, veh_dyn: vdyn):
+        self.veh_dyn = veh_dyn
+
+    def __call__(self):
+        def wrap_dyn(*args, **kwargs):
+            self.veh_dyn(*args, **kwargs)
+        return wrap_dyn
+
+
+def dynamic_3rd(veh_cst: ndarray, veh_nif: ndarray, veh_ctr: ndarray,
                 veh_par: VehParameter, sim_par: SimParameter) -> ndarray:
     """
     Updates according to 3rd order dynamics
@@ -43,7 +65,7 @@ def third_order(veh_cst: ndarray, veh_nif: ndarray, veh_ctr: ndarray,
     a_a_lead = veh_nif[0]
     a_u_veh = veh_ctr[0]
     t_stp = sim_par.t_stp
-    acc_lag = veh_par.acc_lag
+    acc_lag = veh_par.v_lag
     au_s_hwy = a_s_hwy + t_stp * a_e_veh
     au_v_veh = a_v_veh + t_stp * a_a_veh
     au_e_veh = a_e_veh + t_stp * (a_a_lead-a_a_veh)
@@ -51,8 +73,8 @@ def third_order(veh_cst: ndarray, veh_nif: ndarray, veh_ctr: ndarray,
     return np.array([au_s_hwy, au_v_veh, au_e_veh, au_a_veh])
 
 
-def second_order(veh_cst: ndarray, veh_nif: ndarray, veh_ctr: ndarray,
-                 veh_par: VehParameter, sim_par: SimParameter) -> ndarray:
+def dynamic_2nd(veh_cst: ndarray, veh_nif: ndarray, veh_ctr: ndarray,
+                veh_par: VehParameter, sim_par: SimParameter) -> ndarray:
     """
     Updates according to 2nd order dynamics
 
@@ -69,24 +91,9 @@ def second_order(veh_cst: ndarray, veh_nif: ndarray, veh_ctr: ndarray,
     t_stp = sim_par.t_stp
     au_s_hwy = a_s_hwy + t_stp * a_e_veh
     au_v_veh = a_v_veh + t_stp * a_u_veh
-    au_e_veh = a_u_lead - au_v_veh
+    au_e_veh = a_e_veh + t_stp * (a_u_lead - a_u_veh)
     return np.array([au_s_hwy, au_v_veh, au_e_veh])
 
-
-class VehDynamic:
-    """
-    Vehicle dynamics
-
-    VehDynamic(function_dynamic)
-
-    This object was created as a wrapper for the function 
-    dynamic. It can complete missing parameters and provide
-    an standard way to define 
-
-    """
-
-    def __init__(self, veh_dyn: vdyn = second_order):
-        self.veh_dyn = veh_dyn
 
 # -------------------- VEHICLE CLASSES --------------------
 
@@ -97,9 +104,9 @@ class Vehicle:
     """
     n_veh = 0
 
-    def __init__(self, veh_dyn: VehDynamic = second_order)->None:
+    def __init__(self, veh_dyn: VehDynamic = dynamic_2nd)->None:
         self.__class__.n_veh += 1
-        self.veh_dyn: VehDynamic = veh_dyn
+        self.veh_dyn = veh_dyn
 
 
 # -------------------- NETWORK CLASSES --------------------
