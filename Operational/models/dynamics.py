@@ -2,7 +2,7 @@
 from typing import NewType, List, Callable, Union, Optional
 from functools import wraps
 
-from parameter.parameter import VehParameter, SimParameter
+from parameter.parameters import VehParameter, SimParameter
 
 from numpy import ndarray
 import numpy as np

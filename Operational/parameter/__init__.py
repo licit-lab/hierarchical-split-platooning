@@ -1,4 +1,4 @@
 """
 Parameters module
 """
-from parameters import VehParameter, SimParameter
+# from parameters import VehParameter, SimParameter

@@ -8,8 +8,8 @@
 import numpy as np
 from numpy import ndarray
 
-from parameter.parameter import VehParameter, SimParameter
-from models.models import dynamic_2nd, dynamic_3rd, VehDynamic
+from parameter.parameters import VehParameter, SimParameter
+from models.dynamics import dynamic_2nd, dynamic_3rd, VehDynamic
 
 from typing import NewType, List, Callable, Union, Optional
 from functools import wraps
