@@ -2,7 +2,7 @@
     Unit test for parameters module
 """
 
-from Operational.hrctrl.params import VehParameter, SimParameter, CtrParameter
+from parameter.parameters import VehParameter, SimParameter, CtrParameter
 
 import unittest
 

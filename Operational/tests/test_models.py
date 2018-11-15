@@ -5,8 +5,8 @@
 import numpy as np
 from numpy.testing import assert_almost_equal
 
-from Operational.hrctrl.models import (dynamic_2nd, dynamic_3rd, Vehicle)
-from Operational.hrctrl.params import VehParameter, SimParameter
+from models import (dynamic_2nd, dynamic_3rd, VehDynamic, Vehicle)
+from params import VehParameter, SimParameter
 import unittest
 
 

@@ -1,17 +1,11 @@
-"""
-    This file define the vehicle dynamics for two
-    type of vehicles CAV/ HDV and methods so that
-    the dynamic evolution can be computed in a
-    global way.
-"""
-
-import numpy as np
-from numpy import ndarray
-
-from Operational.hrctrl.params import VehParameter, SimParameter
 
 from typing import NewType, List, Callable, Union, Optional
 from functools import wraps
+
+from parameter.parameter import VehParameter, SimParameter
+
+from numpy import ndarray
+import numpy as np
 
 # -------------------- TYPING --------------------
 
@@ -20,11 +14,6 @@ spar = NewType('SimParameter', SimParameter)
 vdyn = NewType('Dynamic', Callable[[
                ndarray, ndarray, ndarray, vpar, spar], ndarray])
 
-
-# -------------------- DEFAULT VALUES --------------------
-
-X_0 = np.zeros([0])
-
 # -------------------- VEHICLE DYNAMICS --------------------
 
 
@@ -32,18 +21,16 @@ class VehDynamic:
     """
     Vehicle dynamics
 
-    function_dynamic
+    VehDynamic(func_dyn)
 
-    This object was created as a wrapper for the function 
-    dynamic. It can complete missing parameters and provide
-    an standard way to define 
+    Creates a wrapper around the function func_dyn so that
 
     """
     @wraps(vdyn)
     def __init__(self, veh_dyn: vdyn):
         self.veh_dyn = veh_dyn
 
-    def __call__(self):
+    def __call__(self, *args, **kwargs):
         def wrap_dyn(*args, **kwargs):
             self.veh_dyn(*args, **kwargs)
         return wrap_dyn
@@ -93,34 +80,3 @@ def dynamic_2nd(veh_cst: ndarray, veh_nif: ndarray, veh_ctr: ndarray,
     au_v_veh = a_v_veh + t_stp * a_u_veh
     au_e_veh = a_e_veh + t_stp * (a_u_lead - a_u_veh)
     return np.array([au_s_hwy, au_v_veh, au_e_veh])
-
-
-# -------------------- VEHICLE CLASSES --------------------
-
-
-class Vehicle:
-    """
-    Single vehicle model
-    """
-    n_veh = 0
-
-    def __init__(self, veh_dyn: VehDynamic = dynamic_2nd)->None:
-        self.__class__.n_veh += 1
-        self.veh_dyn = veh_dyn
-
-
-# -------------------- NETWORK CLASSES --------------------
-
-
-class VehNetwork:
-    """
-        Network of vehicles
-    """
-
-    def __init__(self, l_veh_id: List):
-        self.veh_par = VehParameter()
-        self.l_veh_id = l_veh_id
-
-
-if __name__ == "__main__":
-    print("Launched")
