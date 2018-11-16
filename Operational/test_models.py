@@ -5,8 +5,8 @@
 import numpy as np
 from numpy.testing import assert_almost_equal
 
-from models.models import (dynamic_2nd, dynamic_3rd, VehDynamic, Vehicle)
-from parameter.parameters import VehParameter, SimParameter
+from models import (dynamic_2nd, dynamic_3rd, VehDynamic, Vehicle)
+from parameters import VehParameter, SimParameter
 import unittest
 
 

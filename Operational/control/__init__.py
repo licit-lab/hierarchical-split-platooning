@@ -1,3 +1,0 @@
-"""
-Hierarchical control module 
-"""
