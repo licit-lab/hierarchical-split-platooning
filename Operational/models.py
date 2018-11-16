@@ -9,7 +9,6 @@ import numpy as np
 from numpy import ndarray
 
 from parameters import VehParameter, SimParameter
-from dynamics import dynamic_2nd, dynamic_3rd, VehDynamic
 
 from typing import NewType, List, Callable, Union, Optional
 from functools import wraps
@@ -93,33 +92,64 @@ def dynamic_2nd(veh_cst: ndarray, veh_nif: ndarray, veh_ctr: ndarray,
 # -------------------- VEHICLE CLASSES --------------------
 
 
-class Vehicle:
+class Vehicle(SimParameter, VehParameter):
     """
     Single vehicle model
+
+    veh_dyn: vehicle dynamics 
+    veh_id: vehicle identifier
+    veh_type: vehicle type 
+    veh_clane: current lane
+    veh_clink: current link 
+    veh_cstat: current state
+    veh_ccord: current coordinates (ord, abs)
     """
     n_veh = 0
 
-    def __init__(self, veh_dyn: VehDynamic = dynamic_2nd)->None:
-        self.__class__.n_veh += 1
-        self.veh_dyn = VehDynamic(veh_dyn)
+    def __init__(self, sim_par: SimParameter,
+                 veh_par: VehParameter,
+                 veh_dyn: VehDynamic)->None:
 
-    def initialize_vehicle(self, init_cond: ndarray):
+        self.__class__.n_veh += 1
+        SimParameter.__init__(self, sim_par.t_stp, sim_par.t_hor,
+                              sim_par.t_sim)
+
+        VehParameter.__init__(self, veh_par.u_ffs, veh_par.l_veh,
+                              veh_par.x_gap, cpcty=veh_par.cpcty)
+
+        self.veh_id = None
+        self.veh_dyn = VehDynamic(veh_dyn)
+        self.veh_type = None
+        self.veh_clane = None
+        self.veh_clink = None
+        self.veh_cstat = None
+        self.veh_ccord = None
+
+    def initialize_condition(self, init_cond: ndarray)->None:
         """
         Define initial condition for a vehicle
         """
-        return 0
+        self.veh_cstat = init_cond
 
+    def evolve_step(self):
+        """
+
+        """
 
 # -------------------- NETWORK CLASSES --------------------
 
 
-class VehNetwork:
+class VehNetwork(SimParameter):
     """
         Network of vehicles
+
+        sim_par: simulation parameter 
+
     """
 
-    def __init__(self, l_veh_id: List):
-        self.veh_par = VehParameter()
+    def __init__(self, sim_par: SimParameter,  l_veh_id: List[Vehicle]):
+        super().__init__(sim_par.t_stp, sim_par.t_hor,
+                         sim_par.t_sim)
         self.l_veh_id = l_veh_id
 
 

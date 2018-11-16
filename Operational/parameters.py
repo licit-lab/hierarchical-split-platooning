@@ -173,7 +173,7 @@ class VehParameter:
 
     @staticmethod
     def VehParameterSym(u_ffs: float = U_FFS, k_x: float = K_X_CAV,
-                        w_cgt: float = X_GAP_CAV, l_veh: float = L_CAV):
+                        w_cgt: float = W_CGT_CAV, l_veh: float = L_CAV):
         x_gap = 1/k_x - l_veh
         return VehParameter(u_ffs=u_ffs, l_veh=l_veh,
                             x_gap=x_gap, w_cgt=w_cgt)
@@ -198,7 +198,7 @@ class SimParameter:
         self.t_stp = t_stp
         self.t_hor = t_hor
         self.t_sim = t_sim
-        self.s_hor = round(self.t_stp, self.t_hor)
+        self.s_hor = round(self.t_hor/self.t_stp)
 
     def __str__(self):
         return (f"{self.__class__.__name__}(t_stp = {self.t_stp}, t_hor= {self.t_hor}, t_sim = {self.t_sim})"
