@@ -9,3 +9,4 @@ Notebooks/symuviapy/__pycache__/
 Notebooks/symuviapy/.ipynb_checkpoints/
 *.DS_Store
 *cache*
+*.vscode*
