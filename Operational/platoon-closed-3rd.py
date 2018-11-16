@@ -26,7 +26,7 @@ from models import VehNetwork
 
 # Create the controller
 
-# Create the splitting manouvers to be executed. Tactical layer.
+# Create the splitting manouvers to be executed. (Tactical layer)
 
 # Initialize the controller - (references + models to be launched)
 
@@ -41,6 +41,5 @@ from models import VehNetwork
 # Obtain Performance measurements
 
 # In all cases: Dynamic Answer (State + Control)
-
 
 # Save results
