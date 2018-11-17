@@ -16,6 +16,9 @@
 from parameters import VehParameter, SimParameter
 from models import VehNetwork, Vehicle, dynamic_3rd
 
+# Length of the platoon
+N_VEH = 8
+
 # Create a simulation timings
 T_STP = 0.01
 T_HOR = 0.5
@@ -24,28 +27,36 @@ T_SIM = 60
 sim_par = SimParameter(T_STP, T_HOR, T_SIM)
 
 # Create a vehicle model / Provided originally by the simulator
-
 U_FFS = 25.0
 K_X = 0.16
 W_CGT = 6.25
 L_VEH = 4.0
 
+S0 = 10.0
+
 veh_par = VehParameter.VehParameterSym(U_FFS, K_X, W_CGT, L_VEH)
 
-
-veh_model = Vehicle(sim_par, veh_par, dynamic_3rd)
-print(vars(veh_model))
-
-veh_list = [veh_model, veh_model]
+# Create list of vehicles
+veh_list = [Vehicle(sim_par, veh_par, dynamic_3rd, id=i) for i in range(N_VEH)]
 
 # Create the network of vehicles
 veh_network = VehNetwork(sim_par, veh_list)
 print(vars(veh_network))
 
-
 # Initialize the network of vehicles
+x0 = [0.0] * N_VEH
+s0 = [S0] * N_VEH
+v0 = [U_FFS] * N_VEH
+e0 = [0.0] * N_VEH
+a0 = [0.0] * N_VEH  # only 3rd order models
 
-# Create the controller
+# Initialize each vehicle
+state0 = [s0, v0, e0, a0]
+state0veh = list(zip(*state0))  # state each vehicle
+
+print(dict(zip(range(N_VEH), state0veh)))
+
+# Create the controller[]
 
 # Create the splitting manouvers to be executed. (Tactical layer)
 
