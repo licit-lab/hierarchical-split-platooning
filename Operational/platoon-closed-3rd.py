@@ -53,8 +53,8 @@ a0 = [0.0] * N_VEH  # only 3rd order models
 # Initialize each vehicle
 state0 = [s0, v0, e0, a0]
 state0veh = list(zip(*state0))  # state each vehicle
-
-print(dict(zip(range(N_VEH), state0veh)))
+for veh, state in zip(veh_list, state0veh):
+    veh.initialize_condition(state)
 
 # Create the controller[]
 

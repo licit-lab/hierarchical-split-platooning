@@ -122,7 +122,7 @@ class Vehicle(SimParameter, VehParameter):
         self.lane = None
         self.link = None
         self.state = None
-        self.coordiantes = None
+        self.coordinates = None
 
     def initialize_condition(self, init_cond: ndarray, **kwargs)->None:
         """
@@ -133,7 +133,7 @@ class Vehicle(SimParameter, VehParameter):
         self.lane = kwargs.get('lane', self.lane)
         self.link = kwargs.get('link', self.lane)
         self.state = kwargs.get('state', init_cond)
-        self.coordinates = kwargs.get('coord', self.coordinates)
+        self.coordinates = kwargs.get('coordinates', self.coordinates)
         self.veh_cstat = init_cond
 
     def evolve_step(self)->None:
