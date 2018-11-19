@@ -9,6 +9,9 @@ import numpy as np
 from numpy import ndarray
 
 from parameters import VehParameter, SimParameter
+from control import OperationalCtr
+
+from collections import OrderedDict
 
 from typing import NewType, List, Callable, Union, Optional, Dict
 from functools import wraps
@@ -95,11 +98,11 @@ class Vehicle(SimParameter, VehParameter):
     """
     Single vehicle model
 
-    dynamic: vehicle dynamics 
+    dynamic: vehicle dynamics
     id: vehicle identifier
-    type: vehicle type 
+    type: vehicle type
     current_lane: current lane
-    current_link: current link 
+    current_link: current link
     current_state: current state
     current_coordiantes: current coordinates (ord, abs)
     """
@@ -123,6 +126,7 @@ class Vehicle(SimParameter, VehParameter):
         self.link = None
         self.state = None
         self.coordinates = None
+        self.control = np.array(0.0)
 
     def initialize_condition(self, init_cond: ndarray, **kwargs)->None:
         """
@@ -136,7 +140,16 @@ class Vehicle(SimParameter, VehParameter):
         self.coordinates = kwargs.get('coordinates', self.coordinates)
         self.veh_cstat = init_cond
 
-    def evolve_step(self)->None:
+    def update_control(self,)->None:
+        """
+        Update a control for a vehicle
+        """
+        raise NotImplementedError
+
+    def update_state(self)->None:
+        """
+        Update the state vector for a vehicle with the existing control
+        """
         raise NotImplementedError
 
 
@@ -158,49 +171,62 @@ class VehNetwork(SimParameter):
                          sim_par.t_sim)
         self.veh_number = 0
         self.veh_currentids = []
-        self.vehicles = []
+        self.vehicles = OrderedDict()
         self.append_vehicles(vehicles)
 
-    def initialize_network(self, veh_init: Dict)-> None:
+    def initialize_vehicles(self, veh_init: Dict)-> None:
         """
-        Documents
+        Initialize condition of a single or a set of vehicles
         """
-        for key, value in veh_init:
-            if key not in self.veh_current_ids:
-                self.register_vehicle()
+        for veh_id, state0 in veh_init.items():
+            self.vehicles[veh_id].initialize_condition(state0)
 
     def append_vehicles(self, vehicles: vehtype)->None:
         """
         Add a single or a set of vehicles to the network
         """
         if isinstance(vehicles, Vehicle):
-            self.vehicles.append(vehicles)
+            self.vehicles[vehicles.id] = vehicles
             self.veh_currentids.append(vehicles.id)
             self.veh_number += 1
             return
-        self.vehicles += vehicles
-        self.veh_currentids += [v.id for v in vehicles]
-        self.veh_number += len(vehicles)
+        for veh in vehicles:
+            self.vehicles[veh.id] = veh
+            self.veh_currentids.append(veh.id)
+            self.veh_number += 1
 
     def pop_vehicles(self, vehicles: vehtype)->None:
         """
         Delete a single or a set of vehicles to the network
         """
         if isinstance(vehicles, Vehicle):
-            self.vehicles.remove(vehicles)
+            del self.vehicles[vehicles.id]
             self.veh_currentids.remove(vehicles.id)
             self.veh_number -= 1
             return
-        new_veh = [veh for veh in self.vehicles if veh not in vehicles]
-        vehid2pop = [veh.id for veh in vehicles]
-        new_vehid = [
-            vid for vid in self.veh_currentids if vid not in vehid2pop]
-        self.vehicles = new_veh
-        self.veh_currentids = new_vehid
-        self.veh_number -= len(vehicles)
+        for veh in vehicles:
+            del self.vehicles[veh.id]
+            self.veh_currentids.remove(veh.id)
+            self.veh_number -= 1
 
     def find_leader(self)->None:
         raise NotImplementedError
+
+    def register_controller(self, op_ctrl: OperationalCtr)->None:
+        """
+        Register a controller for the vehicle network
+        """
+        self.OpCtrl = op_ctrl
+
+    def launch_simulation(self)->None:
+        """
+        Start a simulation
+        """
+        # MISSING / USE CONNECTOR FOR SIMUYVIA
+        for it_step, t_step in self:
+            print(it_step, t_step)
+            # self.OpCtrl.compute_control(self)
+            # self.apply_control()
 
 
 if __name__ == "__main__":
