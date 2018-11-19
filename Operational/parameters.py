@@ -179,7 +179,7 @@ class VehParameter(object):
                             x_gap=x_gap, w_cgt=w_cgt)
 
 
-class SimParameter:
+class SimParameter(object):
     """
     Simulation Parameters
 
@@ -252,7 +252,7 @@ class SimParameter:
         return round(self.t_hor/self.t_stp)
 
 
-class CtrParameter:
+class CtrParameter(object):
     """
     Control Parameters
 
