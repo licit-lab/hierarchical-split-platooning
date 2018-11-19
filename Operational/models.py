@@ -173,6 +173,19 @@ class VehNetwork():
         self.vehicles = OrderedDict()
         self.append_vehicles(vehicles)
 
+    def __iter__(self):
+        """
+        Iterator over all vehicles in the network
+        """
+        self.run = iter(self.vehicles.items())
+        return self.run
+
+    def __next__(self):
+        """
+        Iterate over all vehicles in the network
+        """
+        return next(self.run)
+
     def initialize_vehicles(self, veh_init: Dict)-> None:
         """
         Initialize condition of a single or a set of vehicles
