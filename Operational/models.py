@@ -158,7 +158,7 @@ vehtype = Union[List[Vehicle], Vehicle]
 # -------------------- NETWORK CLASSES -------------------------------------
 
 
-class VehNetwork(SimParameter):
+class VehNetwork():
     """
     Network of vehicles
 
@@ -167,8 +167,7 @@ class VehNetwork(SimParameter):
     """
 
     def __init__(self, sim_par: SimParameter,  vehicles: vehtype)->None:
-        super().__init__(sim_par.t_stp, sim_par.t_hor,
-                         sim_par.t_sim)
+        self.sim_par = sim_par
         self.veh_number = 0
         self.veh_currentids = []
         self.vehicles = OrderedDict()
