@@ -252,7 +252,7 @@ class SimParameter:
         return round(self.t_hor/self.t_stp)
 
 
-class CtrParameter:
+class CtrParameter(object):
     """
     Control Parameters
 
