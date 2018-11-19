@@ -15,6 +15,7 @@
 """
 from parameters import VehParameter, SimParameter
 from models import VehNetwork, Vehicle, dynamic_3rd
+from control import OperationalCtr
 
 # Length of the platoon
 N_VEH = 8
@@ -53,16 +54,18 @@ a0 = [0.0] * N_VEH  # only 3rd order models
 # Initialize each vehicle
 state0 = [s0, v0, e0, a0]
 state0veh = list(zip(*state0))  # state each vehicle
-for veh, state in zip(veh_list, state0veh):
-    veh.initialize_condition(state)
+state0net = dict(zip(veh_network.veh_currentids, state0veh))
+veh_network.initialize_vehicles(state0net)
 
 # Create the controller[]
+op_ctrl = OperationalCtr()
 
 # Create the splitting manouvers to be executed. (Tactical layer)
 
 # Initialize the controller - (references + models to be launched)
 
 # Evolve the system
+veh_network.launch_simulation()
 
 # Scenario 1: Perturb the measurements with noise
 
