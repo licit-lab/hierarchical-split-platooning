@@ -223,7 +223,7 @@ class VehNetwork(SimParameter):
         Start a simulation
         """
         # MISSING / USE CONNECTOR FOR SIMUYVIA
-        for it_step, t_step in self:
+        for it_step, t_step in self.sim_par:
             print(it_step, t_step)
             # self.OpCtrl.compute_control(self)
             # self.apply_control()
