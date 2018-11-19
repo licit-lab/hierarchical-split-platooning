@@ -195,6 +195,8 @@ class SimParameter:
 
     def __init__(self, t_stp: float = T_STP, t_hor: float = T_HOR,
                  t_sim: float = T_SIM):
+        self.t_cur = 0.0
+        self.s_cur = 0
         self.t_stp = t_stp
         self.t_hor = t_hor
         self.t_sim = t_sim
@@ -207,6 +209,35 @@ class SimParameter:
     def __repr__(self):
         return (f"{self.__class__.__name__}({self.t_stp}, {self.t_hor}, {self.t_sim})"
                 )
+
+    def __iter__(self):
+        """
+        The SimParameter object can be iterated for time control purposes 
+        """
+        return self
+
+    def __next__(self):
+        """
+        Determine next iteration step and stores current time & sample for a
+        a specific launch. 
+        """
+        if self.t_cur < self.t_sim:
+            self.t_cur += self.t_stp
+            self.s_cur += 1
+            return self.s_cur, self.t_cur
+        raise StopIteration
+
+    def get_simulation_steps(self):
+        """
+        Query the number of steps for a simulation
+        """
+        return round(self.t_sim/self.t_stp)
+
+    def get_horizon_steps(self):
+        """
+        Query the number of horizon steps 
+        """
+        return round(self.t_hor/self.t_stp)
 
 
 class CtrParameter:
