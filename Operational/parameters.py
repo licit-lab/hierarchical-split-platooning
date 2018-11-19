@@ -224,8 +224,20 @@ class SimParameter:
         if self.t_cur < self.t_sim:
             self.t_cur += self.t_stp
             self.s_cur += 1
-            return self.s_cur, self.t_cur
+            return self.s_cur, round(self.t_cur, 2)
         raise StopIteration
+
+    def iterate_horizon(self):
+        """
+        Iterate forward in the control horizon window 
+        """
+        self.s_fut = 0
+        self.t_fut = self.t_cur
+        while self.t_fut < self.t_cur+self.t_hor:
+            self.t_fut += self.t_stp
+            self.s_fut += 1
+            yield self.s_fut, round(self.t_fut, 2)
+        return StopIteration
 
     def get_simulation_steps(self):
         """
