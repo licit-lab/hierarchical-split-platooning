@@ -67,7 +67,7 @@ U_MIN = -1.5  # Min. Acceleration
 # --------------------
 
 
-class VehParameter:
+class VehParameter(object):
     """
     Vehicle Parameter:
 
@@ -252,7 +252,7 @@ class SimParameter:
         return round(self.t_hor/self.t_stp)
 
 
-class CtrParameter(object):
+class CtrParameter:
     """
     Control Parameters
 
