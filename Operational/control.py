@@ -7,6 +7,7 @@ import numpy as np
 
 from parameters import SimParameter, CtrParameter
 
+from models import VehNetwork, Vehicle
 from typing import Dict, Iterable, Tuple
 
 
@@ -33,24 +34,6 @@ class TacticalCtrl(SimParameter):
         Run along all the registered events
         """
         return next(self.run)
-
-    def register_veh_network(self, veh_net: VehNetwork):
-        """
-        Register the current veh_net in the controller so computations
-        will remain valid for vehicles within this network.
-        """
-        self.veh_net = veh_net
-
-    def anticipation_time(self, veh_net: VehNetwork):
-        """
-        Computes the anticipation time according to TRB 2018
-        """
-        for veh in VehNetwork:
-            self.tantcp[veh] = self.e_rel/2 * \
-                (1/self.a_max - 1 / self.a_min) + \
-                (veh.u_ffs + veh.w_cgt) / \
-                self.e_rel(self.tauf[veh]-self.tau0[veh])
-        raise NotImplementedError
 
     def compute_tactical(self):
         """
