@@ -31,7 +31,9 @@
     Min control:        u_min
 """
 # from typing import List, NamedTuple, Callable, Optional, Union
-import typing
+# import typing
+
+from numpy import arange
 
 # -------------------- DEFAULT VALUES -----------------------------------------
 
