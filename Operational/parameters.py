@@ -64,7 +64,7 @@ C_NB2 = 1
 C_NB3 = 0.5
 U_MAX = 1.5  # Max. Acceleration
 U_MIN = -1.5  # Min. Acceleration
-
+E_REL = 25.0*0.3
 
 # --------------------
 
@@ -257,7 +257,7 @@ class SimParameter(object):
         """
         Simulation time
         """
-        return arange(0, self.t_sim,self.t_stp)
+        return arange(0, self.t_sim, self.t_stp)
 
 
 class CtrParameter(object):
@@ -280,12 +280,14 @@ class CtrParameter(object):
                  c_nb2: float = C_NB2,
                  c_nb3: float = C_NB3,
                  u_min: float = U_MIN,
-                 u_max: float = U_MAX):
+                 u_max: float = U_MAX,
+                 e_rel: float = E_REL):
         self.c_nb1 = c_nb1
         self.c_nb2 = c_nb2
         self.c_nb3 = c_nb3
         self.u_min = u_min
         self.u_max = u_max
+        self.e_rel = e_rel
 
     def __str__(self):
         return (f"{self.__class__.__name__}(c_nb1={self.c_nb1}, c_nb2={self.c_nb2}, c_nb3={self.c_nb3})"
@@ -294,3 +296,7 @@ class CtrParameter(object):
     def __repr__(self):
         return (f"{self.__class__.__name__}(c_nb1={self.c_nb1}, c_nb2={self.c_nb2}, c_nb3={self.c_nb3})"
                 )
+
+
+if __name__ == "__main__":
+    print(f"Running: {__file__}")
