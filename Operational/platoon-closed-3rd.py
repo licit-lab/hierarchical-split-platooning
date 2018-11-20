@@ -1,21 +1,23 @@
-""" 
+"""
     Robustness analysis of MPC techniques over Truck platooning strategies.
-    
+
     This script runs an scenario for the operational layer where 8 trucks in
-    a platoon split. 
+    a platoon split.
 
     A 3rd order model is used + following options are feasible
 
     1. Analysis adding noise in the measurements.
     2. Model mismatch between the control and the model.
-    3. Delays within the control signal. 
+    3. Delays within the control signal.
 
-    Usage: 
+    Usage:
     python platoon-closed-3rd.py
 """
 from parameters import VehParameter, SimParameter
 from models import VehNetwork, Vehicle, dynamic_3rd
-from control import OperationalCtr
+from control import OperationalCtr, TacticalCtrl
+
+from matplotlib import pyplot as plt
 
 # Length of the platoon
 N_VEH = 8
@@ -59,13 +61,17 @@ veh_network.initialize_vehicles(state0net)
 
 # Create the controller[]
 op_ctrl = OperationalCtr()
+event = {1: {'ta': 1, 'tm': 2, 'tau0': 1, 'tauf': 2}}
+tc_ctrl = TacticalCtrl(veh_network.sim_par, event)
+for k, v in tc_ctrl:
+    print(k, v)
+    #
+tc_ctrl.compute_reference()
 
-# Create the splitting manouvers to be executed. (Tactical layer)
+# print(len(sim_par.get_simtime_vector()))
+# tc_ctrl.compute_reference()
 
-# Initialize the controller - (references + models to be launched)
-
-# Evolve the system
-veh_network.launch_simulation()
+# veh_network.launch_simulation()
 
 # Scenario 1: Perturb the measurements with noise
 
