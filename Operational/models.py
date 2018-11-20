@@ -13,7 +13,7 @@ from control import OperationalCtr
 
 from collections import OrderedDict
 
-from typing import NewType, List, Callable, Union, Optional, Dict
+from typing import NewType, List, Callable, Union, Optional, Dict, Iterable, Tuple
 from functools import wraps
 
 # -------------------- TYPING ----------------------------------------------
@@ -173,14 +173,14 @@ class VehNetwork():
         self.vehicles = OrderedDict()
         self.append_vehicles(vehicles)
 
-    def __iter__(self):
+    def __iter__(self)->Iterable:
         """
         Iterator over all vehicles in the network
         """
         self.run = iter(self.vehicles.items())
         return self.run
 
-    def __next__(self):
+    def __next__(self)->Tuple:
         """
         Iterate over all vehicles in the network
         """
