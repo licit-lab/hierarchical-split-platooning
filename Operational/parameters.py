@@ -251,6 +251,12 @@ class SimParameter(object):
         """
         return round(self.t_hor/self.t_stp)
 
+    def get_simtime_vector(self):
+        """
+        Simulation time
+        """
+        return arange(0, self.t_sim,self.t_stp)
+
 
 class CtrParameter(object):
     """
