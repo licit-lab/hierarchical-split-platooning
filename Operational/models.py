@@ -7,9 +7,9 @@
 
 import numpy as np
 from numpy import ndarray
+import networkx as nx
 
 from parameters import VehParameter, SimParameter
-from control import OperationalCtr
 
 from collections import OrderedDict
 
@@ -32,17 +32,24 @@ class VehDynamic:
 
     VehDynamic(func_dyn)
 
-    Creates a wrapper around the function func_dyn so that
+    Creates a wrapper around the function func_dyn so that the function
+    can be called directly i.e. dynamic_3rd(...), still you can query info
+    regarding the dynamics such as the name.
+
+    This class may also save states for easiness in the computation
 
     """
     @wraps(vdyn)
-    def __init__(self, veh_dyn: vdyn):
+    def __init__(self, veh_dyn: vdyn)->None:
         self.veh_dyn = veh_dyn
 
-    def __call__(self, *args, **kwargs):
+    def __call__(self, *args, **kwargs)->Callable:
         def wrap_dyn(*args, **kwargs):
             self.veh_dyn(*args, **kwargs)
         return wrap_dyn
+
+    def get_name(self)->str:
+        return self.veh_dyn.__name__
 
 
 def dynamic_3rd(veh_cst: ndarray, veh_nif: ndarray, veh_ctr: ndarray,
@@ -158,7 +165,7 @@ vehtype = Union[List[Vehicle], Vehicle]
 # -------------------- NETWORK CLASSES -------------------------------------
 
 
-class VehNetwork():
+class VehNetwork(dict):
     """
     Network of vehicles
 
@@ -172,6 +179,7 @@ class VehNetwork():
         self.veh_currentids = []
         self.vehicles = OrderedDict()
         self.append_vehicles(vehicles)
+        self.graph = None
 
     def __iter__(self)->Iterable:
         """
@@ -185,6 +193,9 @@ class VehNetwork():
         Iterate over all vehicles in the network
         """
         return next(self.run)
+
+    def __getitem__(self, key):
+        return self.vehicles[key]
 
     def initialize_vehicles(self, veh_init: Dict)-> None:
         """
@@ -221,14 +232,35 @@ class VehNetwork():
             self.veh_currentids.remove(veh.id)
             self.veh_number -= 1
 
-    def find_leader(self)->None:
-        raise NotImplementedError
+    def create_network(self)->None:
+        """
+        Creates a network object that allows to query leaders
+        information 
+        """
+        self.graph = nx.DiGraph()
+        for veh_id, veh in self:
+            self.graph.add_node(veh)
 
-    def register_controller(self, op_ctrl: OperationalCtr)->None:
+    def register_vehicle_link(self, veh_link: Dict)->None:
         """
-        Register a controller for the vehicle network
+        Register a list of predetermined edges for a vehicle
+
+        veh_link = {receiver: leader}
         """
-        self.OpCtrl = op_ctrl
+        self.veh_link = veh_link
+
+        if not self.graph:
+            self.create_network()
+
+        for veh_id, leader_id in veh_link.items():
+            self.graph.add_edge(self.vehicles[veh_id],
+                                self.vehicles[leader_id])
+
+    def get_neighbor(self, vehicle: Vehicle)->Vehicle:
+        """
+        Return the neighbor of a vehicle
+        """
+        return self.graph.neighbors(vehicle)
 
     def launch_simulation(self)->None:
         """
@@ -242,4 +274,4 @@ class VehNetwork():
 
 
 if __name__ == "__main__":
-    print("Launched")
+    print(f"Running: {__file__}")
