@@ -40,6 +40,13 @@ class TacticalCtrl(SimParameter):
         """
         raise NotImplementedError
 
+    def build_events(self):
+        """
+        Based on tm, tau0, tauf, for each vehicle computes anticipation
+        time and updates the dictionary
+        """
+        raise NotImplementedError
+
     def compute_reference(self):
         """
         Compute reference signals for all events
