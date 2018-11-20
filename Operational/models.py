@@ -197,6 +197,9 @@ class VehNetwork(dict):
     def __getitem__(self, key):
         return self.vehicles[key]
 
+    def __len__(self):
+        return len(self.__dict__)
+
     def initialize_vehicles(self, veh_init: Dict)-> None:
         """
         Initialize condition of a single or a set of vehicles
