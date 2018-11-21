@@ -128,7 +128,7 @@ class OperationalCtr(CtrParameter, SimParameter):
             """
             Second order dynamic matrices (s,v,e)
             """
-            T, _ = args
+            T, = args
             A = np.array([[1, 0, T],
                           [0, 1, 0],
                           [0, 0, 1]])
@@ -139,19 +139,18 @@ class OperationalCtr(CtrParameter, SimParameter):
                           [0, 1, 0]])
             D = np.array([[0],
                           [0]])
-            return (A, B, C, D)
+            return A, B, C, D
 
-        def _second_order_net(B, veh_net: VehNetwork)->ndarray:
+        def _second_order_net(Ag, Bg, veh: Vehicle)->ndarray:
             """
             Updates the B matrix in the system to 
             account for information from neighbors
             """
-            for veh_id, veh in veh_net:
-                for i, veh_neighbor in enumerate(veh_net.get_neighbor(veh)):
-                    row = self._pos_mat[veh_id] * 4 + 2  # e
-                    col = self._pos_mat[veh_neighbor.id]  # by (u)
-                    B[row][col] = veh.t_stp
-            return B
+            for veh_neighbor in self.veh_net.get_neighbor(veh):
+                row = self._pos_mat[veh_id] * 3 + 2  # e (affected state)
+                col = self._pos_mat[veh_neighbor.id]  # u (by neighbor st)
+                Bg[row][col] = veh.t_stp
+            return Ag, Bg
 
         def _third_order(*args)->Tuple:
             """
@@ -173,19 +172,18 @@ class OperationalCtr(CtrParameter, SimParameter):
             D = np.array([[0],
                           [0],
                           [0]])
-            return (A, B, C, D)
+            return A, B, C, D
 
-        def _third_order_net(A, veh_net: VehNetwork)->ndarray:
+        def _third_order_net(Ag, Bg, veh: Vehicle)->ndarray:
             """
             Updates the A matrix in the system to 
             account for information from neighbors
             """
-            for veh_id, veh in veh_net:
-                for veh_neighbor in veh_net.get_neighbor(veh):
-                    row = self._pos_mat[veh_id] * 4 + 2  # e (affected state)
-                    col = self._pos_mat[veh_neighbor.id] * 4 + 3  # a (by )
-                    A[row][col] = veh.t_stp
-            return A
+            for veh_neighbor in self.veh_net.get_neighbor(veh):
+                row = self._pos_mat[veh_id] * 4 + 2  # e (affected state)
+                col = self._pos_mat[veh_neighbor.id] * 4 + 3  # a (by ne)
+                Ag[row][col] = veh.t_stp
+            return Ag, Bg
 
         def _get_global_matrices(veh: Vehicle)->Tuple:
             """
@@ -205,12 +203,22 @@ class OperationalCtr(CtrParameter, SimParameter):
 
             return fmat(*args)
 
-        def _get_neighbor_matices(veh: Vehicle)->Tuple:
+        def _get_neighbor_matrices(Ag, Bg, veh: Vehicle)->Tuple:
             """
             Return neighbor matrices for the corresponding
             dynamics 
             """
-            raise NotImplementedError
+            d = {"dynamic_3rd": {"fmat": _third_order_net,
+                                 "args": (Ag, Bg, veh)
+                                 },
+                 "dynamic_2nd": {"fmat": _second_order_net,
+                                 "args": (Ag, Bg, veh)
+                                 }
+                 }
+            fmat = d[veh.dynamic.get_name()]["fmat"]
+            args = d[veh.dynamic.get_name()]["args"]
+
+            return fmat(*args)
 
         def _append_matrix(X, Y): return block_diag(X, Y) if X.size else Y
 
@@ -219,6 +227,7 @@ class OperationalCtr(CtrParameter, SimParameter):
         pos_mat = 0
         self._pos_mat = {}  # Index reference
 
+        # Creation
         for veh_id, veh in self.veh_net:
             A, B, C, D = _get_global_matrices(veh)
             Ag = _append_matrix(Ag, A)
@@ -228,9 +237,13 @@ class OperationalCtr(CtrParameter, SimParameter):
             self._pos_mat[veh_id] = pos_mat
             pos_mat += 1
 
-        Ag = _third_order_net(Ag, self.veh_net)
-        Bg = _second_order_net(Bg, self.veh_net)
-        print(Ag)
+        # Neighbor update
+        for veh_id, veh in self.veh_net:
+            Ag, Bg = _get_neighbor_matrices(Ag, Bg, veh)
+
+        print_matrix(Ag)
+        print_matrix(Bg)
+        print('Hey')
 
     def register_veh_network(self, veh_net: VehNetwork):
         """
