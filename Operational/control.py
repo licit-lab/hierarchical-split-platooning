@@ -20,7 +20,7 @@ def print_matrix(mat):
     for i in range(len(mat)):
         print()
         for j in mat[i]:
-            print(f'{j} \t', end='')
+            print(f'{j:.2f} \t', end='')
 
 
 # -------------------- SUPERVISORY CONTROL ------------------------------------
@@ -148,9 +148,10 @@ class OperationalCtr(CtrParameter, SimParameter):
             """
             for veh_id, veh in veh_net:
                 for i, veh_neighbor in enumerate(veh_net.get_neighbor(veh)):
-                    print(i, veh_neighbor)
-                print('Next')
-            raise NotImplementedError
+                    row = self._pos_mat[veh_id] * 4 + 2  # e 
+                    col = self._pos_mat[veh_neighbor.id] # by (u)
+                    B[row][col] = veh.t_stp
+            return B
 
         def _third_order(*args)->Tuple:
             """
@@ -228,6 +229,7 @@ class OperationalCtr(CtrParameter, SimParameter):
             pos_mat += 1
 
         Ag = _third_order_net(Ag, self.veh_net)
+        Bg = _second_order_net(Bg, self.veh_net)
         print(Ag)
 
     def register_veh_network(self, veh_net: VehNetwork):
