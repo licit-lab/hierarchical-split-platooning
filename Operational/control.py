@@ -148,8 +148,8 @@ class OperationalCtr(CtrParameter, SimParameter):
             """
             for veh_id, veh in veh_net:
                 for i, veh_neighbor in enumerate(veh_net.get_neighbor(veh)):
-                    row = self._pos_mat[veh_id] * 4 + 2  # e 
-                    col = self._pos_mat[veh_neighbor.id] # by (u)
+                    row = self._pos_mat[veh_id] * 4 + 2  # e
+                    col = self._pos_mat[veh_neighbor.id]  # by (u)
                     B[row][col] = veh.t_stp
             return B
 
