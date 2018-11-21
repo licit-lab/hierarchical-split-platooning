@@ -14,12 +14,12 @@
     python platoon-closed-3rd.py
 """
 from parameters import VehParameter, SimParameter, CtrParameter
-from models import VehNetwork, Vehicle, dynamic_3rd
+from models import VehNetwork, Vehicle, dynamic_3rd, dynamic_2nd
 from control import OperationalCtr, TacticalCtrl
 
 
 # Length of the platoon
-N_VEH = 8
+N_VEH = 3
 
 # Create a simulation timings
 T_STP = 0.01
