@@ -121,7 +121,7 @@ class OperationalCtr(CtrParameter, SimParameter):
     def build_global_dynamics(self):
         """
         Based on the network topology constructs a diagonal system to
-        evolve the system
+        evolve the system dynamics as a centralized one
         """
 
         def _second_order(*args)->Tuple:
@@ -146,9 +146,9 @@ class OperationalCtr(CtrParameter, SimParameter):
             Updates the B matrix in the system to 
             account for information from neighbors
             """
-            for veh_neighbor in self.veh_net.get_neighbor(veh):
+            for neighbor in self.veh_net.get_neighbors(veh):
                 row = self._pos_mat[veh_id] * 3 + 2  # e (affected state)
-                col = self._pos_mat[veh_neighbor.id]  # u (by neighbor st)
+                col = self._pos_mat[neighbor.id]  # u (by neighbor st)
                 Bg[row][col] = veh.t_stp
             return Ag, Bg
 
@@ -179,9 +179,9 @@ class OperationalCtr(CtrParameter, SimParameter):
             Updates the A matrix in the system to 
             account for information from neighbors
             """
-            for veh_neighbor in self.veh_net.get_neighbor(veh):
+            for neighbor in self.veh_net.get_neighbors(veh):
                 row = self._pos_mat[veh_id] * 4 + 2  # e (affected state)
-                col = self._pos_mat[veh_neighbor.id] * 4 + 3  # a (by ne)
+                col = self._pos_mat[neighbor.id] * 4 + 3  # a (by ne)
                 Ag[row][col] = veh.t_stp
             return Ag, Bg
 
@@ -241,9 +241,15 @@ class OperationalCtr(CtrParameter, SimParameter):
         for veh_id, veh in self.veh_net:
             Ag, Bg = _get_neighbor_matrices(Ag, Bg, veh)
 
-        print_matrix(Ag)
-        print_matrix(Bg)
-        print('Hey')
+        self.Ag = Ag
+        self.Bg = Bg
+
+    def build_lagrange_dynamics(self):
+        """
+            Based on the network topology constructs a diagonal system to
+            evolve the lagrangian dynamics 
+        """
+        raise NotImplementedError
 
     def register_veh_network(self, veh_net: VehNetwork):
         """
@@ -251,6 +257,14 @@ class OperationalCtr(CtrParameter, SimParameter):
         will remain valid for vehicles within this network.
         """
         self.veh_net = veh_net
+
+    def evolve_forward_dynamics(self):
+        """
+        Performs a single step of dynamic evolution of the full network
+        """
+        for veh_id, veh in self.veh_net:
+            neighbors = self.veh_net.get_neighbors(veh)
+            veh.update_state(neighbors)
 
 
 if __name__ == "__main__":

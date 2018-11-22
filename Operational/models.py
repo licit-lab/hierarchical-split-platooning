@@ -26,6 +26,40 @@ vdyn = NewType('Dynamic', Callable[[
 # -------------------- VEHICLE DYNAMICS ------------------------------------
 
 
+def select_dispatcher(dynamics_name):
+    def _dispatcher(*args, **kwargs):
+        """
+        This function is created to dispatch arugments to different
+        dynamics defined in the system.
+        """
+        veh, veh_neigh = args
+        veh_cst = veh.state
+        veh_nif = next(veh_neigh)
+
+        d = {"dynamic_3rd": {"args": (veh.state,
+                                      veh_neigh.state,
+                                      veh.control,
+                                      veh.parameter,
+                                      veh.sim_par),
+                             "kwargs": kwargs
+                             },
+             "dynamic_2nd": {"args": (veh.state,
+                                      veh_neigh.control,
+                                      veh.control,
+                                      veh.parameter,
+                                      veh.sim_par),
+                             "kwargs": kwargs
+                             }
+             }
+
+        args = d[dynamics_name]["args"]
+        kwargs = d[dynamics_name]["kwargs"]
+        self.veh_dyn(*args, **kwargs)
+    return _dispatcher
+
+    raise NotImplementedError
+
+
 class VehDynamic:
     """
     Vehicle dynamics
@@ -39,14 +73,41 @@ class VehDynamic:
     This class may also save states for easiness in the computation
 
     """
-    @wraps(vdyn)
+
     def __init__(self, veh_dyn: vdyn)->None:
         self.veh_dyn = veh_dyn
 
     def __call__(self, *args, **kwargs)->Callable:
-        def wrap_dyn(*args, **kwargs):
+
+        def _dispatcher(*args, **kwargs):
+            """
+            This function is created to dispatch arugments to different
+            dynamics defined in the system.
+            """
+            veh, veh_neigh = args
+            veh_cst = veh.state
+            veh_nif = next(veh_neigh)
+
+            d = {"dynamic_3rd": {"args": (veh.state,
+                                          veh_neigh.state,
+                                          veh.control,
+                                          veh.parameter,
+                                          veh.sim_par),
+                                 "kwargs": kwargs
+                                 },
+                 "dynamic_2nd": {"args": (veh.state,
+                                          veh_neigh.control,
+                                          veh.control,
+                                          veh.parameter,
+                                          veh.sim_par),
+                                 "kwargs": kwargs
+                                 }
+                 }
+
+            args = d[self.get_name()]["args"]
+            kwargs = d[self.get_name()]["kwargs"]
             self.veh_dyn(*args, **kwargs)
-        return wrap_dyn
+        return _dispatcher
 
     def get_name(self)->str:
         return self.veh_dyn.__name__
@@ -57,9 +118,9 @@ def dynamic_3rd(veh_cst: ndarray, veh_nif: ndarray, veh_ctr: ndarray,
     """
     Updates according to 3rd order dynamics
 
-    veh_cst: Current vehicle state (s,v,e,a)
-    veh_nif: Neighbor vehicle information (u)
-    veh_ctr: Vehicle control input (u)
+    veh_cst: Current vehicle state(s, v, e, a)
+    veh_nif: Neighbor vehicle information(u)
+    veh_ctr: Vehicle control input(u)
     veh_par: Vehicle parameters
     sim_par: Simulation parameters
 
@@ -81,9 +142,9 @@ def dynamic_2nd(veh_cst: ndarray, veh_nif: ndarray, veh_ctr: ndarray,
     """
     Updates according to 2nd order dynamics
 
-    veh_cst: Current vehicle state (s,v,e)
-    veh_nif: Neighbor vehicle information (u)
-    veh_ctr: Vehicle control input (u)
+    veh_cst: Current vehicle state(s, v, e)
+    veh_nif: Neighbor vehicle information(u)
+    veh_ctr: Vehicle control input(u)
     veh_par: Vehicle parameters
     sim_par: Simulation parameters
 
@@ -111,7 +172,7 @@ class Vehicle(SimParameter, VehParameter):
     current_lane: current lane
     current_link: current link
     current_state: current state
-    current_coordiantes: current coordinates (ord, abs)
+    current_coordiantes: current coordinates(ord, abs)
     """
     n_veh = 0
 
@@ -127,12 +188,13 @@ class Vehicle(SimParameter, VehParameter):
                               veh_par.x_gap, cpcty=veh_par.cpcty)
 
         self.id = kwargs.get('id', None)
-        self.dynamic = VehDynamic(dynamic)
+        self.dynamic = dynamic
         self.type = kwargs.get('id', None)
         self.lane = None
         self.link = None
-        self.state = None
+        self.state = np.array([])
         self.coordinates = None
+        self.parameter = veh_par
         self.control = np.array(0.0)
 
     def initialize_condition(self, init_cond: ndarray, **kwargs)->None:
@@ -153,10 +215,11 @@ class Vehicle(SimParameter, VehParameter):
         """
         raise NotImplementedError
 
-    def update_state(self)->None:
+    def update_state(self, neighbors: Iterable)->None:
         """
         Update the state vector for a vehicle with the existing control
         """
+        self.state = self.dynamic(self, neighbors)
         raise NotImplementedError
 
 
@@ -238,7 +301,7 @@ class VehNetwork(dict):
     def create_network(self)->None:
         """
         Creates a network object that allows to query leaders
-        information 
+        information
         """
         self.graph = nx.DiGraph()
         for veh_id, veh in self:
@@ -259,9 +322,9 @@ class VehNetwork(dict):
             self.graph.add_edge(self.vehicles[veh_id],
                                 self.vehicles[leader_id])
 
-    def get_neighbor(self, vehicle: Vehicle)->Vehicle:
+    def get_neighbors(self, vehicle: Vehicle)->Vehicle:
         """
-        Return the neighbor of a vehicle
+        Return the neighbors of a vehicle
         """
         return self.graph.neighbors(vehicle)
 

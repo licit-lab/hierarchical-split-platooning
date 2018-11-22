@@ -76,8 +76,9 @@ tc_ctrl.compute_reference()
 
 op_ctrl = OperationalCtr(platoon.sim_par, ctr_par)
 op_ctrl.register_veh_network(platoon)
-op_ctrl.build_global_dynamics()
-
+# op_ctrl.build_global_dynamics()
+# op_ctrl.build_lagrange_dynamics()
+op_ctrl.evolve_forward_dynamics()
 # veh_network.launch_simulation()
 
 # Scenario 1: Perturb the measurements with noise
