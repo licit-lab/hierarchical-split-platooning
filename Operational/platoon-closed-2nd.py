@@ -105,7 +105,6 @@ N = 8
 
 # CAV parameters
 L_AVG = 4.75
-T_LAG = 0.2
 
 # Control
 C_N1 = 0.1
@@ -153,14 +152,13 @@ S_D = 1/K-L_AVG
 G_T = S_D/V_P
 
 
-def set_initial_condition(mS0, mV0, mDV0, mA0):
+def set_initial_condition(mS0, mV0, mDV0):
     """ Setup initial conditions of experiment"""
-    mS, mV, mDV, mA = (np.zeros(aDims) for _ in range(4))
+    mS, mV, mDV = (np.zeros(aDims) for _ in range(3))
     mS[0, :] = mS0
     mV[0, :] = mV0
     mDV[0, :] = mDV0
-    mA[0, :] = mA0
-    return (mS, mV, mDV, mA)
+    return (mS, mV, mDV)
 
 
 def create_ref(dEvent, Teq):
@@ -198,24 +196,23 @@ def create_ref(dEvent, Teq):
 # -----------------------------------------------------------------------------
 
 
-def initialize_mpc(mS0, mV0, mDV0, mA0):
+def initialize_mpc(mS0, mV0, mDV0):
     """ Initialize internal variables control"""
-    m_S, m_V, m_DV, m_A, m_LS, m_LV, m_LA, = (
-        np.zeros(aDimMPC) for _ in range(7))
+    m_S, m_V, m_DV, m_LS, m_LV = (
+        np.zeros(aDimMPC) for _ in range(5))
     m_S[0] = mS0
     m_V[0] = mV0
     m_DV[0] = mDV0
-    m_A[0] = mDV0
-    return m_S, m_V, m_DV, m_A, m_LS, m_LV, m_LA
+    return m_S, m_V, m_DV, m_LS, m_LV
 
 
-def forward_evolution(X, U, lag = T_LAG):
+def forward_evolution(X, U):
     """ Compute forward model evolution
-        X: S, V, DV, A 
+        X: S, V, DV
         U: control
     """
 
-    S, V, DV, A = X
+    S, V, DV = X
 
     def cordim(x): return x.shape if len(x.shape) > 1 else (1, x.shape[0])
 
@@ -223,18 +220,17 @@ def forward_evolution(X, U, lag = T_LAG):
 
     for i, u in enumerate(U):
         if i < len(S)-1:
-            da = np.hstack((0, A[i][0:-1]-A[i][1:]))
-            DV[i+1] = DV[i] + DT * da
+            du = np.hstack((0, u[0:-1]-u[1:]))
+            DV[i+1] = DV[i] + DT * du
             S[i+1] = S[i] + DT * DV[i]
-            V[i+1] = V[i] + DT * A[i]
-            A[i+1] = (1-DT/lag) * A[i] + DT / lag * u
-    return S, V, DV, A
+            V[i+1] = V[i] + DT * u
+    return S, V, DV
 
 
-def backward_evolution(X, Ref, lag = T_LAG):
+def backward_evolution(X, Ref):
     """ Compute  bakckward costate evolution
-        L: LS, LV, LA
-        X: S, V, DV, A 
+        L: LS, LV
+        X: S, V, DV
     """
 
     def reversedEnumerate(*args):
@@ -242,13 +238,13 @@ def backward_evolution(X, Ref, lag = T_LAG):
         revArg = [np.flip(x, axis=0) for x in args]
         return zip(range(len(args[0])-1, -1, -1), *revArg)
 
-    S, V, DV, A = X
+    S, V, DV = X
 
-    ls, lv, la = (np.zeros(aDimMPC) for _ in range(3))
+    ls, lv = (np.zeros(aDimMPC) for _ in range(2))
 
-    runinv = reversedEnumerate(S, V, DV, A, Ref)
+    runinv = reversedEnumerate(S, V, DV, Ref)
 
-    for i, s, v, dv, a, tg in runinv:
+    for i, s, v, dv, tg in runinv:
         if i > 0:
             sref = v * tg + L_AVG
             lv[i-1] = lv[i] + DT * (-2 * C_N1 * (s-sref) * tg
@@ -257,16 +253,14 @@ def backward_evolution(X, Ref, lag = T_LAG):
             ls[i-1] = ls[i] + DT * (2 * C_N1 * (s-sref)
                                     )
 
-            la[i-1] = la[i] + DT * (lv[i] - la[i]/lag)
-
-    return ls, lv, la
+    return ls, lv
 
 
-def compute_control(mX0, mRef, lag = T_LAG):
+def compute_control(mX0, mRef):
     """ Computes a control based on mX0 and the reference mRef"""
 
-    _m_S, _m_V, _m_DV, _m_A, _m_LS, _m_LV, _m_LA = initialize_mpc(*mX0)
-    _X = (_m_S, _m_V, _m_DV, _m_A)
+    _m_S, _m_V, _m_DV, _m_LS, _m_LV = initialize_mpc(*mX0)
+    _X = (_m_S, _m_V, _m_DV)
 
     # Parameters
 
@@ -286,21 +280,19 @@ def compute_control(mX0, mRef, lag = T_LAG):
         try:
             next(step)
 
-            U_star = -_m_LA / (2 * C_N3 * lag)
+            U_star = -_m_LV / (2 * C_N3)
 
             U_star = np.clip(U_star, U_MIN, U_MAX)
 
-            _m_S, _m_V, _m_DV, _m_A = forward_evolution(_X, U_star, lag)
+            _m_S, _m_V, _m_DV = forward_evolution(_X, U_star)
 
-            _lS, _lV, _lA = backward_evolution(_X, mRef, lag)
+            _lS, _lV = backward_evolution(_X, mRef)
 
             _m_LS = (1 - ALPHA) * _m_LS + ALPHA * _lS
             _m_LV = (1 - ALPHA) * _m_LV + ALPHA * _lV
-            _m_LA = (1 - ALPHA) * _m_LA + ALPHA * _lA
 
             error = np.linalg.norm(_m_LS - _lS) + \
-                np.linalg.norm(_m_LV - _lV) + \
-                np.linalg.norm(_m_LA - _lA)
+                np.linalg.norm(_m_LV - _lV)
 
             # print(f'Error:{error}')
             # Routine for changing convergence parameter
@@ -335,21 +327,15 @@ def compute_control(mX0, mRef, lag = T_LAG):
 def closed_loop(dEvent):
     """Receives a dictionary and finds the solution in closed loop"""
 
-    # Robustness
-    new_lag = dEvent[0].get('lag',T_LAG)
-    if dEvent[0]['mdlt']:
-        new_lag = T_LAG + 0.1
-
     # Time
     aTime = np.arange(nSamples)*DT
 
     mS0 = np.ones(N) * (S_D + L_AVG)
     mV0 = np.ones(N) * V_P
     mDV0 = np.zeros(N)
-    mA0 = np.zeros(N)
     mX0 = np.array([i * (S_D + L_AVG) for i in reversed(range(N))])
 
-    mS, mV, mDV, mA = set_initial_condition(mS0, mV0, mDV0, mA0)
+    mS, mV, mDV = set_initial_condition(mS0, mV0, mDV0)
     mX = np.empty_like(mS)
     mX[0] = mX0
 
@@ -367,23 +353,21 @@ def closed_loop(dEvent):
 
             print(f'Sample Time:{t[-1]}')
 
-            aX = (mS[i], mV[i], mDV[i], mA[i])
+            aX = (mS[i], mV[i], mDV[i])
             if dEvent[0]['ns']:
                 aX = (mS[i] + dEvent[0]['w']*np.random.rand(N),
                       mV[i],
-                      mDV[i],
-                      mA[i])
+                      mDV[i])
 
-            aU = compute_control(aX, mRefW, new_lag)
+            aU = compute_control(aX, mRefW)
 
-            aDA = mA[i][0:-1] - mA[i][1:]
+            aDU = aU[0:-1] - aU[1:]
 
-            aDA = np.insert(aDA, 0, 0)
+            aDU = np.insert(aDU, 0, 0)
 
             mS[i+1] = mS[i] + DT * mDV[i]
-            mV[i+1] = mV[i] + DT * mA[i]
-            mDV[i+1] = mDV[i] + DT * aDA
-            mA[i+1] = (1-DT/new_lag) * mA[i] + DT/new_lag * aU
+            mV[i+1] = mV[i] + DT * aU
+            mDV[i+1] = mDV[i] + DT * aDU
 
             mU[i] = aU
 
@@ -391,7 +375,7 @@ def closed_loop(dEvent):
 
     mSd = mRef * V_P + L_AVG
 
-    return mS, mV, mDV, mA, mSd, mU, mX
+    return mS, mV, mDV, mSd, mU, mX
 
 
 if __name__ == "__main__":
@@ -399,90 +383,55 @@ if __name__ == "__main__":
     # Time
     aTime = np.arange(nSamples)*DT
 
-    # Simulated events 
-    # 1. Opening gap 1 T -> 2 T | Lag = 200ms
-    # 2. Opening gap 1 T -> 3 T | Lag = 200ms
-    # 3. Opening gap 1 T -> 2 T | Lag = 200ms | Noisy conditions
-    # 4. Opening gap 1 T -> 3 T, 1 T -> 2T | Lag = 200ms
-    # 5. Opening gap 1 T -> 3 T, 1 T -> 2T | Lag = 200ms | Noisy conditions
-    # 6. Opening gap 1 T -> 2 T | Lag = 300ms  
-    # 7. Opening gap 1 T -> 2 T | Lag = 400ms  
-    # 8. Opening gap 1 T -> 2 T | Model missmatch 
+    iYieldTruck = range(1, N)
 
+    # Simulated events 
+    # 1. Opening gap 1 T -> 2 T 
+    # 2. Opening gap 1 T -> 3 T 
+    # 3. Opening gap 1 T -> 2 T | Noisy conditions
+    # 4. Opening gap 1 T -> 3 T, 1 T -> 2T 
 
 
     mEvents = [({'id': 1,
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
-                 'ns': False,
-                 'mdlt': False,
-                 'lag': T_LAG},
+                 'ns': False},
                 ),
                 ({'id': 1,
                  'tm': 30.0,
                  'tg': (G_T, 3 * G_T),
-                 'ns': False,
-                 'mdlt': False,
-                 'lag': T_LAG},
+                 'ns': False
+                 },
                 ),
                ({'id': 1,
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': True,
-                 'w': 1, 
-                 'mdlt': False,
-                 'lag': T_LAG},
-                ),              
-                ({'id': 1,
-                 'tm': 30.0,
-                 'tg': (G_T, 3 * G_T),
-                 'ns': False,
-                 'w': 0, 
-                 'mdlt': False, 
-                 'lag': T_LAG},
-                 {'id': 4,
-                 'tm': 30.0,
-                 'tg': (G_T, 2 * G_T),
-                 'ns': False,
-                 'w': 0, 
-                 'lag': T_LAG},
-                ),      
-                ({'id': 1,
-                 'tm': 30.0,
-                 'tg': (G_T, 3 * G_T),
-                 'ns': True,
-                 'w': 1, 
-                 'mdlt': False, 
-                 'lag': T_LAG},
-                 {'id': 4,
-                 'tm': 30.0,
-                 'tg': (G_T, 2 * G_T),
-                 'ns': True,
-                 'w': 1, 
-                 'lag': T_LAG},
-                ),                               
-                ({'id': 1,
-                 'tm': 30.0,
-                 'tg': (G_T, 2 * G_T),
-                 'ns': False,
-                 'mdlt': False,
-                 'lag': 0.3},
-                ), 
-                 ({'id': 1,
-                 'tm': 30.0,
-                 'tg': (G_T, 2 * G_T),
-                 'ns': False,
-                 'mdlt': False,
-                 'lag': 0.4},
-                ), 
-                ({'id': 1,
-                 'tm': 30.0,
-                 'tg': (G_T, 2 * G_T),
-                 'ns': True,
-                 'w': 1, 
-                 'mdlt': True, 
-                 'lag': T_LAG},
+                 'w': 1}
                 ),
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 3 * G_T),
+                 'ns': False,
+                 'w': 0},
+                 {'id': 4,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False, 
+                 'w': 0},
+                ),
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 3 * G_T),
+                 'ns': True,
+                 'w': 1},
+                 {'id': 4,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': True,
+                 'w': 1},
+                )
+
                ]
 
     print(f'Simulating the following situations: {mEvents}')
@@ -493,15 +442,14 @@ if __name__ == "__main__":
 
         print(f'Current situation:{event}\n')
 
-        S, V, DV, A, Sd, U, X = closed_loop(event)
+        S, V, DV, Sd, U, X = closed_loop(event)
 
         print(f'Event simulated ')
 
-        sEvent = '_3rd_yield_' + str(ev_id)
+        sEvent = '_2nd_yield_' + str(ev_id)
 
         filename_S = dirname + os.path.sep + 'space' + sEvent + '.csv'
         filename_V = dirname + os.path.sep + 'speed' + sEvent + '.csv'
-        filename_A = dirname + os.path.sep + 'accel' + sEvent + '.csv'
         filename_R = dirname + os.path.sep + 'refer' + sEvent + '.csv'
         filename_U = dirname + os.path.sep + 'cntrl' + sEvent + '.csv'
         filename_X = dirname + os.path.sep + 'posit' + sEvent + '.csv'
@@ -515,6 +463,4 @@ if __name__ == "__main__":
         np.savetxt(filename_U, U, fmt='%.6f',
                    delimiter='\t', newline='\n')
         np.savetxt(filename_X, X, fmt='%.6f',
-                   delimiter='\t', newline='\n')
-        np.savetxt(filename_A, A, fmt='%.6f',
                    delimiter='\t', newline='\n')
