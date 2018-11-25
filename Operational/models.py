@@ -26,41 +26,7 @@ vdyn = NewType('Dynamic', Callable[[
 # -------------------- VEHICLE DYNAMICS ------------------------------------
 
 
-def select_dispatcher(dynamics_name):
-    def _dispatcher(*args, **kwargs):
-        """
-        This function is created to dispatch arugments to different
-        dynamics defined in the system.
-        """
-        veh, veh_neigh = args
-        veh_cst = veh.state
-        veh_nif = next(veh_neigh)
-
-        d = {"dynamic_3rd": {"args": (veh.state,
-                                      veh_neigh.state,
-                                      veh.control,
-                                      veh.parameter,
-                                      veh.sim_par),
-                             "kwargs": kwargs
-                             },
-             "dynamic_2nd": {"args": (veh.state,
-                                      veh_neigh.control,
-                                      veh.control,
-                                      veh.parameter,
-                                      veh.sim_par),
-                             "kwargs": kwargs
-                             }
-             }
-
-        args = d[dynamics_name]["args"]
-        kwargs = d[dynamics_name]["kwargs"]
-        self.veh_dyn(*args, **kwargs)
-    return _dispatcher
-
-    raise NotImplementedError
-
-
-class VehDynamic:
+class VehDynamic(object):
     """
     Vehicle dynamics
 
@@ -76,43 +42,47 @@ class VehDynamic:
 
     def __init__(self, veh_dyn: vdyn)->None:
         self.veh_dyn = veh_dyn
+        self.prev_state = np.array([])
 
     def __call__(self, *args, **kwargs)->Callable:
 
-        def _dispatcher(*args, **kwargs):
-            """
-            This function is created to dispatch arugments to different
-            dynamics defined in the system.
-            """
-            veh, veh_neigh = args
-            veh_cst = veh.state
-            veh_nif = next(veh_neigh)
+        # def _dispatcher(*args, **kwargs):
+        """
+        This function is created to dispatch arugments to different
+        dynamics defined in the system.
+        """
+        veh, veh_neigh = args
+        veh_cst = veh.state
+        veh_nif = next(veh_neigh)
 
-            d = {"dynamic_3rd": {"args": (veh.state,
-                                          veh_neigh.state,
-                                          veh.control,
-                                          veh.parameter,
-                                          veh.sim_par),
-                                 "kwargs": kwargs
-                                 },
-                 "dynamic_2nd": {"args": (veh.state,
-                                          veh_neigh.control,
-                                          veh.control,
-                                          veh.parameter,
-                                          veh.sim_par),
-                                 "kwargs": kwargs
-                                 }
-                 }
+        d = {"dynamic_3rd": {"args": (veh.state,
+                                      veh_neigh.state,
+                                      veh.control,
+                                      veh.parameter,
+                                      veh.sim_par),
+                             "kwargs": kwargs},
+             "dynamic_2nd": {"args": (veh.state,
+                                      veh_neigh.control,
+                                      veh.control,
+                                      veh.parameter,
+                                      veh.sim_par),
+                             "kwargs": kwargs}
+             }
 
-            args = d[self.get_name()]["args"]
-            kwargs = d[self.get_name()]["kwargs"]
-            self.veh_dyn(*args, **kwargs)
-        return _dispatcher
+        args = d[self.get_name()]["args"]
+        kwargs = d[self.get_name()]["kwargs"]
+        self.veh_dyn(*args, **kwargs)
+        # return _dispatcher
+        return self.veh_dyn(*args, **kwargs)
+
+    # def __doc__(self)->str:
+    #     return self.veh_dyn.__doc__
 
     def get_name(self)->str:
         return self.veh_dyn.__name__
 
 
+@VehDynamic
 def dynamic_3rd(veh_cst: ndarray, veh_nif: ndarray, veh_ctr: ndarray,
                 veh_par: VehParameter, sim_par: SimParameter) -> ndarray:
     """
@@ -188,7 +158,7 @@ class Vehicle(SimParameter, VehParameter):
                               veh_par.x_gap, cpcty=veh_par.cpcty)
 
         self.id = kwargs.get('id', None)
-        self.dynamic = dynamic
+        self.dynamic = VehDynamic(dynamic)
         self.type = kwargs.get('id', None)
         self.lane = None
         self.link = None
