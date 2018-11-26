@@ -373,6 +373,12 @@ def closed_loop(dEvent):
                       mV[i],
                       mDV[i],
                       mA[i])
+            if dEvent[0]['delay']:
+                d = max(dEvent[0]['d'],0)
+                aX = (mS[i-d],
+                      mV[i-d],
+                      mDV[i-d],
+                      mA[i-d])
 
             aU = compute_control(aX, mRefW, new_lag)
 
@@ -400,14 +406,17 @@ if __name__ == "__main__":
     aTime = np.arange(nSamples)*DT
 
     # Simulated events 
-    # 1. Opening gap 1 T -> 2 T | Lag = 200ms
-    # 2. Opening gap 1 T -> 3 T | Lag = 200ms
-    # 3. Opening gap 1 T -> 2 T | Lag = 200ms | Noisy conditions
-    # 4. Opening gap 1 T -> 3 T, 1 T -> 2T | Lag = 200ms
-    # 5. Opening gap 1 T -> 3 T, 1 T -> 2T | Lag = 200ms | Noisy conditions
-    # 6. Opening gap 1 T -> 2 T | Lag = 300ms  
-    # 7. Opening gap 1 T -> 2 T | Lag = 400ms  
-    # 8. Opening gap 1 T -> 2 T | Model missmatch 
+    # 0. Opening gap 1 T -> 2 T | Lag = 200ms
+    # 1. Opening gap 1 T -> 3 T | Lag = 200ms
+    # 2. Opening gap 1 T -> 2 T | Lag = 200ms | Noisy conditions
+    # 3. Opening gap 1 T -> 3 T, 1 T -> 2T | Lag = 200ms
+    # 4. Opening gap 1 T -> 3 T, 1 T -> 2T | Lag = 200ms | Noisy conditions
+    # 5. Opening gap 1 T -> 2 T | Lag = 300ms  
+    # 6. Opening gap 1 T -> 2 T | Lag = 400ms  
+    # 7. Opening gap 1 T -> 2 T | Lag = 500ms  
+    # 8. Opening gap 1 T -> 2 T | Lag = 600ms      
+    # 9. Opening gap 1 T -> 2 T | Model missmatch 
+    # 10. Opening gap 1 T -> 2 T | Model missmatch | Noisy cnditions
 
 
 
@@ -416,14 +425,16 @@ if __name__ == "__main__":
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
                  'mdlt': False,
-                 'lag': T_LAG},
+                 'lag': T_LAG,
+                 'delay': False},
                 ),
                 ({'id': 1,
                  'tm': 30.0,
                  'tg': (G_T, 3 * G_T),
                  'ns': False,
                  'mdlt': False,
-                 'lag': T_LAG},
+                 'lag': T_LAG,
+                 'delay': False},
                 ),
                ({'id': 1,
                  'tm': 30.0,
@@ -431,7 +442,8 @@ if __name__ == "__main__":
                  'ns': True,
                  'w': 1, 
                  'mdlt': False,
-                 'lag': T_LAG},
+                 'lag': T_LAG,
+                 'delay': False},
                 ),              
                 ({'id': 1,
                  'tm': 30.0,
@@ -439,13 +451,15 @@ if __name__ == "__main__":
                  'ns': False,
                  'w': 0, 
                  'mdlt': False, 
-                 'lag': T_LAG},
+                 'lag': T_LAG,
+                 'delay': False},
                  {'id': 4,
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
                  'w': 0, 
-                 'lag': T_LAG},
+                 'lag': T_LAG,
+                 'delay': False},
                 ),      
                 ({'id': 1,
                  'tm': 30.0,
@@ -453,43 +467,120 @@ if __name__ == "__main__":
                  'ns': True,
                  'w': 1, 
                  'mdlt': False, 
-                 'lag': T_LAG},
+                 'lag': T_LAG,
+                 'delay': False},
                  {'id': 4,
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': True,
                  'w': 1, 
-                 'lag': T_LAG},
+                 'lag': T_LAG,
+                 'delay': False},
                 ),                               
                 ({'id': 1,
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
                  'mdlt': False,
-                 'lag': 0.3},
+                 'lag': 0.3,
+                 'delay': False},
                 ), 
                  ({'id': 1,
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
                  'mdlt': False,
-                 'lag': 0.4},
+                 'lag': 0.4,
+                 'delay': False},
                 ), 
+                 ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'mdlt': False,
+                 'lag': 0.5,
+                 'delay': False},
+                ), 
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'mdlt': False,
+                 'lag': 0.6,
+                 'delay': False},
+                ), 
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'w': 0, 
+                 'mdlt': True, 
+                 'lag': T_LAG,
+                 'delay': False},
+                ),                
                 ({'id': 1,
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': True,
                  'w': 1, 
                  'mdlt': True, 
-                 'lag': T_LAG},
+                 'lag': T_LAG,
+                 'delay': False},
                 ),
                ]
 
-    print(f'Simulating the following situations: {mEvents}')
+    mEvents2 = [({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'mdlt': False,
+                 'lag': T_LAG,
+                 'delay': True,
+                 'd': 6},
+                ),
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'mdlt': False,
+                 'lag': T_LAG,
+                 'delay': True,
+                 'd': 8},
+                ),
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'mdlt': False,
+                 'lag': T_LAG,
+                 'delay': True,
+                 'd': 10},
+                ),
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'mdlt': False,
+                 'lag': T_LAG,
+                 'delay': True,
+                 'd': 12},
+                ),
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'mdlt': False,
+                 'lag': T_LAG,
+                 'delay': True,
+                 'd': 14},
+                )
+                ]
+
+    print(f'Simulating the following situations: {mEvents2}\n')
 
     dirname = os.path.join(os.getcwd(), '..', 'Output')
 
-    for ev_id, event in enumerate(mEvents):
+    for ev_id, event in enumerate(mEvents2,16):
 
         print(f'Current situation:{event}\n')
 
