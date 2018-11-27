@@ -390,29 +390,33 @@ if __name__ == "__main__":
     # 2. Opening gap 1 T -> 3 T 
     # 3. Opening gap 1 T -> 2 T | Noisy conditions
     # 4. Opening gap 1 T -> 3 T, 1 T -> 2T 
-
+    # 5. Opening gap 1 T -> 3 T, 1 T -> 2T | Noisy conditions
 
     mEvents = [({'id': 1,
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
-                 'ns': False},
-                ),
-                ({'id': 1,
-                 'tm': 30.0,
-                 'tg': (G_T, 3 * G_T),
-                 'ns': False},
-                ),
-                ({'id': 1,
-                 'tm': 30.0,
-                 'tg': (G_T, 2 * G_T),
-                 'ns': True,
-                 'w': 1},
+                 'ns': False,
+                 'name': '1T2T'},
                 ),
                 ({'id': 1,
                  'tm': 30.0,
                  'tg': (G_T, 3 * G_T),
                  'ns': False,
-                 'w': 0},
+                 'name': '1T3T'},
+                ),
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': True,
+                 'w': 1,
+                 'name': '1T2TN'},
+                ),
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 3 * G_T),
+                 'ns': False,
+                 'w': 0,
+                 'name': '1T3T1T2T'},
                  {'id': 4,
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
@@ -423,14 +427,14 @@ if __name__ == "__main__":
                  'tm': 30.0,
                  'tg': (G_T, 3 * G_T),
                  'ns': True,
-                 'w': 1},
+                 'w': 1,
+                 'name': '1T3T1T2TN'},
                  {'id': 4,
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': True,
                  'w': 1},
                 )
-
                ]
 
     print(f'Simulating the following situations: {mEvents}')
@@ -445,7 +449,7 @@ if __name__ == "__main__":
 
         print(f'Event simulated ')
 
-        sEvent = '_2nd_yield_' + str(ev_id)
+        sEvent = '_2nd_yield_' + event[0]['name']
 
         filename_S = dirname + os.path.sep + 'space' + sEvent + '.csv'
         filename_V = dirname + os.path.sep + 'speed' + sEvent + '.csv'
