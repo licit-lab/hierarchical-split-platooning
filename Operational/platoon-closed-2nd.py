@@ -11,7 +11,7 @@
     3. Delays within the control signal.
 
     Usage:
-    python platoon-closed-3rd.py
+    python platoon-closed-2nd.py
 """
 # SCENARIO UNDER API ----------------------------------------------------------
 
