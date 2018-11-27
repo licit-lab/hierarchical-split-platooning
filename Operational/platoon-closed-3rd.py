@@ -427,8 +427,9 @@ if __name__ == "__main__":
     # 18. Opening gap 1 T -> 2 T | Delay = 1000ms  
     # 19. Opening gap 1 T -> 2 T | Delay = 1200ms     
     # 20. Opening gap 1 T -> 2 T | Delay = 1400ms 
+    # 20. Opening gap 1 T -> 1.9 T, 1 T -> 2.2 T| Lag = 200ms 
 
-    mEvents = [({'id': 1,
+    mEvents =  [({'id': 1,
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
@@ -645,6 +646,23 @@ if __name__ == "__main__":
                  'delay': True,
                  'd': 14,
                  'name': '1T2TL200D14'},
+                ),
+                ({'id': 3,
+                 'tm': 56.26,
+                 'tg': (G_T, 1.9*G_T),
+                 'ns': False,
+                 'w': 0, 
+                 'mdlt': False, 
+                 'lag': T_LAG,
+                 'delay': False,
+                 'name': '1T19T1T222TL200'},
+                 {'id': 5,
+                 'tm': 58.78,
+                 'tg': (G_T, 2.2*G_T),
+                 'ns': False,
+                 'w': 0, 
+                 'lag': T_LAG,
+                 'delay': False},
                 )
                 ]
 
