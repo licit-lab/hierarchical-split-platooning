@@ -165,7 +165,7 @@ def backward_evolution(X, Ref, lag = T_LAG):
 
     runinv = reversedEnumerate(S, V, DV, A, Ref)
 
-    for i, s, v, dv, a, tg in runinv:
+    for i, s, v, dv, _, tg in runinv:
         if i > 0:
             sref = v * tg + L_AVG
             lv[i-1] = lv[i] + DT * (-2 * C_N1 * (s-sref) * tg
@@ -253,9 +253,9 @@ def closed_loop(dEvent):
     """Receives a dictionary and finds the solution in closed loop"""
 
     # Robustness
-    new_lag = dEvent[0].get('lag',T_LAG)
-    if dEvent[0]['mdlt']:
-        new_lag = T_LAG + 0.1
+    control_lag = dEvent[0].get('lag',T_LAG) # Parameter known by controller
+
+    par_unc_const = dEvent[0].get('mdlt',0) # Constant Perturb
 
     # Time
     aTime = np.arange(nSamples)*DT
@@ -271,7 +271,6 @@ def closed_loop(dEvent):
     mX[0] = mX0
 
     mRef = create_ref(dEvent, G_T)
-    mTheta = np.zeros(mRef.shape)
     mU = np.zeros(mRef.shape)
 
     mRefW = G_T*np.ones((H, N))
@@ -297,16 +296,25 @@ def closed_loop(dEvent):
                       mDV[i-d],
                       mA[i-d])
 
-            aU = compute_control(aX, mRefW, new_lag)
+            par_unc_var = dEvent[0].get('t_lag_v',0)
+            par_unc_rnd = (np.random.rand(1)[0] - 1) * \
+                        par_unc_var 
+            real_lag = control_lag + par_unc_const + par_unc_rnd
+
+            print(f"Lag control: {control_lag} / Real lag: {real_lag} / Unc: {par_unc_rnd}")
+
+            aU = compute_control(aX, mRefW, control_lag)
 
             aDA = mA[i][0:-1] - mA[i][1:]
 
             aDA = np.insert(aDA, 0, 0)
 
+
+
             mS[i+1] = mS[i] + DT * mDV[i]
             mV[i+1] = mV[i] + DT * mA[i]
             mDV[i+1] = mDV[i] + DT * aDA
-            mA[i+1] = (1-DT/new_lag) * mA[i] + DT/new_lag * aU
+            mA[i+1] = (1-DT/real_lag) * mA[i] + DT/real_lag * aU
 
             mU[i] = aU
 
@@ -322,6 +330,22 @@ if __name__ == "__main__":
     # Time
     aTime = np.arange(nSamples)*DT
 
+    # Parameters configuration 
+    # 
+    # id: Id of vehicle splitting (starting from 0-N)
+    # tm: Merging time 
+    # tg: time gap 
+    # ns: true/false - add noise on the spacing sensor of variance 'w', 
+    # if 'true' w should be specified
+    # 
+    # w: variance of noise on spacing measurement 
+    # mdlt: model missmatch: Time value added to the T_LAG parameter
+    # delay: true /false introduces delay on the system, default = 0:
+    # 
+    # d: delay value 
+    #
+    # mldtn: model mismatch with noisy condition: Time constant is T_LAG
+    #   
     # Simulated events 
     # 0. Opening gap 1 T -> 2 T | Lag = 200ms
     # 1. Opening gap 1 T -> 3 T | Lag = 200ms
@@ -332,7 +356,7 @@ if __name__ == "__main__":
     # 6. Opening gap 1 T -> 2 T | Lag = 400ms  
     # 7. Opening gap 1 T -> 2 T | Lag = 500ms  
     # 8. Opening gap 1 T -> 2 T | Lag = 600ms      
-    # 9. Opening gap 1 T -> 2 T | Model missmatch 
+    # 9. `Opening gap 1 T -> 2 T | Model missmatch 
     # 10. Opening gap 1 T -> 2 T | Model missmatch | Noisy conditions
     # 11. Opening gap 1 T -> 2 T | Delay = 100ms  
     # 12. Opening gap 1 T -> 2 T | Delay = 200ms  
@@ -344,13 +368,24 @@ if __name__ == "__main__":
     # 18. Opening gap 1 T -> 2 T | Delay = 1000ms  
     # 19. Opening gap 1 T -> 2 T | Delay = 1200ms     
     # 20. Opening gap 1 T -> 2 T | Delay = 1400ms 
-    # 20. Opening gap 1 T -> 1.9 T, 1 T -> 2.2 T| Lag = 200ms 
-
+    # 21. Opening gap 1 T -> 1.9 T, 1 T -> 2.2 T| Lag = 200ms 
+    # 22. Opening gap 1 T -> 2 T | Lag = 200ms
+    # 23. Opening gap 1 T -> 2 T | Lag = 300ms 
+    # 24. Opening gap 1 T -> 2 T | Lag = 100ms | Model missmatch = 200ms
+    # 25. Opening gap 1 T -> 2 T | Lag = 300ms | Model missmatch = -200ms
+    # Model Missmatch (MM) -  Random Model Missmatch (RMM)
+    # 26. Opening gap 1 T -> 2 T | Lag = 200ms | MM = 0 | RMM = 150ms
+    # 27. Opening gap 1 T -> 2 T | Lag = 300ms | MM = 0 | RMM = 250ms
+    # 28. Opening gap 1 T -> 2 T | Lag = 400ms | MM = 0 | RMM = 350ms
+    # 29. Opening gap 1 T -> 2 T | Lag = 100ms | MM = 200ms | RMM = 200ms 
+    # 30. Opening gap 1 T -> 2 T | Lag = 500ms | MM = 0 | RMM = 450ms  
+    # 31. Opening gap 1 T -> 2 T | Lag = 500ms | MM = 0 | RMM = 150ms
+    # 28. Opening gap 1 T -> 2 T | Lag = 500ms | MM = 0 | RMM = 0ms    
+    #  
     mEvents =  [({'id': 1,
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
-                 'mdlt': False,
                  'lag': T_LAG,
                  'delay': False,
                  'name': '1T2TL200'},
@@ -359,7 +394,6 @@ if __name__ == "__main__":
                  'tm': 30.0,
                  'tg': (G_T, 3 * G_T),
                  'ns': False,
-                 'mdlt': False,
                  'lag': T_LAG,
                  'delay': False,
                  'name': '1T3TL200'},
@@ -369,7 +403,6 @@ if __name__ == "__main__":
                  'tg': (G_T, 2 * G_T),
                  'ns': True,
                  'w': 1, 
-                 'mdlt': False,
                  'lag': T_LAG,
                  'delay': False,
                  'name': '1T2TL200N'},
@@ -378,8 +411,7 @@ if __name__ == "__main__":
                  'tm': 30.0,
                  'tg': (G_T, 3 * G_T),
                  'ns': False,
-                 'w': 0, 
-                 'mdlt': False, 
+                 'w': 0,  
                  'lag': T_LAG,
                  'delay': False,
                  'name': '1T3T1T2TL200'},
@@ -395,8 +427,7 @@ if __name__ == "__main__":
                  'tm': 30.0,
                  'tg': (G_T, 3 * G_T),
                  'ns': True,
-                 'w': 1, 
-                 'mdlt': False, 
+                 'w': 1,  
                  'lag': T_LAG,
                  'delay': False,
                  'name': '1T3T1T2TL200N'},
@@ -412,7 +443,6 @@ if __name__ == "__main__":
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
-                 'mdlt': False,
                  'lag': 0.3,
                  'delay': False,
                  'name': '1T2TL300'},
@@ -421,7 +451,6 @@ if __name__ == "__main__":
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
-                 'mdlt': False,
                  'lag': 0.4,
                  'delay': False,
                  'name': '1T2TL400'},
@@ -430,7 +459,6 @@ if __name__ == "__main__":
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
-                 'mdlt': False,
                  'lag': 0.5,
                  'delay': False,
                  'name': '1T2TL500'},
@@ -439,7 +467,6 @@ if __name__ == "__main__":
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
-                 'mdlt': False,
                  'lag': 0.6,
                  'delay': False,
                  'name': '1T2TL600'},
@@ -449,7 +476,7 @@ if __name__ == "__main__":
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
                  'w': 0, 
-                 'mdlt': True, 
+                 'mdlt': 0.2, 
                  'lag': T_LAG,
                  'delay': False,
                  'name': '1T2TL200M'},
@@ -459,7 +486,7 @@ if __name__ == "__main__":
                  'tg': (G_T, 2 * G_T),
                  'ns': True,
                  'w': 1, 
-                 'mdlt': True, 
+                 'mdlt': 0.2, 
                  'lag': T_LAG,
                  'delay': False,
                  'name': '1T2TL200MN'},
@@ -468,7 +495,6 @@ if __name__ == "__main__":
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
-                 'mdlt': False,
                  'lag': T_LAG,
                  'delay': True,
                  'd': 1,
@@ -478,7 +504,6 @@ if __name__ == "__main__":
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
-                 'mdlt': False,
                  'lag': T_LAG,
                  'delay': True,
                  'd': 2,
@@ -488,7 +513,6 @@ if __name__ == "__main__":
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
-                 'mdlt': False,
                  'lag': T_LAG,
                  'delay': True,
                  'd': 3,
@@ -498,7 +522,6 @@ if __name__ == "__main__":
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
-                 'mdlt': False,
                  'lag': T_LAG,
                  'delay': True,
                  'd': 4,
@@ -508,7 +531,6 @@ if __name__ == "__main__":
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
-                 'mdlt': False,
                  'lag': T_LAG,
                  'delay': True,
                  'd': 5,
@@ -518,7 +540,6 @@ if __name__ == "__main__":
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
-                 'mdlt': False,
                  'lag': T_LAG,
                  'delay': True,
                  'd': 6,
@@ -528,7 +549,6 @@ if __name__ == "__main__":
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
-                 'mdlt': False,
                  'lag': T_LAG,
                  'delay': True,
                  'd': 8,
@@ -538,7 +558,6 @@ if __name__ == "__main__":
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
-                 'mdlt': False,
                  'lag': T_LAG,
                  'delay': True,
                  'd': 10,
@@ -548,7 +567,6 @@ if __name__ == "__main__":
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
-                 'mdlt': False,
                  'lag': T_LAG,
                  'delay': True,
                  'd': 12,
@@ -558,7 +576,6 @@ if __name__ == "__main__":
                  'tm': 30.0,
                  'tg': (G_T, 2 * G_T),
                  'ns': False,
-                 'mdlt': False,
                  'lag': T_LAG,
                  'delay': True,
                  'd': 14,
@@ -568,8 +585,7 @@ if __name__ == "__main__":
                  'tm': 56.26,
                  'tg': (G_T, 1.9*G_T),
                  'ns': False,
-                 'w': 0, 
-                 'mdlt': False, 
+                 'w': 0,  
                  'lag': T_LAG,
                  'delay': False,
                  'name': '1T19T1T222TL200'},
@@ -580,8 +596,119 @@ if __name__ == "__main__":
                  'w': 0, 
                  'lag': T_LAG,
                  'delay': False},
-                )
+                ),
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'w': 0,  
+                 'lag': 0.2,
+                 'delay': False,
+                 'name': '1T2TL200M'},
+                ),
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'w': 0,  
+                 'lag': 0.3,
+                 'delay': False,
+                 'name': '1T2TL300M'},
+                ),                
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'w': 0, 
+                 'mdlt': 0.2, 
+                 'lag': 0.1,
+                 'delay': False,
+                 'name': '1T2TL100M200'},
+                ),
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'w': 0, 
+                 'mdlt': -0.2, 
+                 'lag': 0.3,
+                 'delay': False,
+                 'name': '1T2TL300M200'},
+                ),                
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'w': 0,  
+                 't_lag_v': 0.15,
+                 'lag': 0.2,
+                 'delay': False,
+                 'name': '1T2TL200MN200'},
+                ), 
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'w': 0,  
+                 't_lag_v': 0.25,
+                 'lag': 0.3,
+                 'delay': False,
+                 'name': '1T2TL300MN300'},
+                ),
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'w': 0,  
+                 't_lag_v': 0.35,
+                 'lag': 0.4,
+                 'delay': False,
+                 'name': '1T2TL400MN400'},
+                ),                                    
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'w': 0,  
+                 'mdlt': 0.2,                  
+                 't_lag_v': 0.2,
+                 'lag': 0.1,
+                 'delay': False,
+                 'name': '1T2TL100M200N200'},
+                ),
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'w': 0,  
+                 't_lag_v': 0.45,
+                 'lag': 0.5,
+                 'delay': False,
+                 'name': '1T2TL500MN500'},
+                ),
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'w': 0,  
+                 't_lag_v': 0.1,
+                 'lag': 0.5,
+                 'delay': False,
+                 'name': '1T2TL500MN100'},
+                ),
+                ({'id': 1,
+                 'tm': 30.0,
+                 'tg': (G_T, 2 * G_T),
+                 'ns': False,
+                 'w': 0,
+                 'lag': 0.5,
+                 'delay': False,
+                 'name': '1T2TL500M'},
+                ),
                 ]
+    # New tests 
+    # mEvents =   [
+    #             ]
 
     print(f'Simulating the following situations: {mEvents}\n')
 
